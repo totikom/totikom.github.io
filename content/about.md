@@ -2,7 +2,7 @@
 title = "About Me"
 path = "about"
 +++
-I'm totikom or and that's my small site.
+I'm totikom and that's my small site.
 
 IRL may name is Eugene[^1] Lomov and I'm a compiler engineer trying to make DSP code faster.
 
