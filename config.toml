@@ -9,6 +9,10 @@ compile_sass = true
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = true
 
+taxonomies = [
+    {name = "tags"},
+]
+
 [markdown]
 # Whether to do syntax highlighting
 # Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
@@ -33,9 +37,9 @@ menu_items = [
 
     # tags should only be enabled if you have "tags" taxonomy
     # see documentation below for more details
-    #{name = "tags", url = "$BASE_URL/tags"},
-    #{name = "archive", url = "$BASE_URL/archive"},
-    {name = "about me", url = "$BASE_URL/about"},
+    {name = "tags", url = "$BASE_URL/tags"},
+    {name = "archive", url = "$BASE_URL/archive"},
+    {name = "about me", url = "$BASE_URL"},
 
     # set newtab to true to make the link open in new tab
     #{name = "github", url = "url-to-your-github", newtab = true},
