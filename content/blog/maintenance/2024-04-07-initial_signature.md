@@ -1,8 +1,12 @@
 +++
 title = "Site ownership proof"
+description = "PGP-signed message comfirming that I'm the owner of this site"
 
+template = "page.html"
 [taxonomies]
 tags = ["maintainance"]
+[extra]
+show_only_description = true
 +++
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
