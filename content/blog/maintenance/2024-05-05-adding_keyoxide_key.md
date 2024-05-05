@@ -1,6 +1,6 @@
 +++
 title = "I've started using keyoxide!"
-description = "PGP-signed message comfirming that ownership of Keyoxide profile"
+description = "PGP-signed message comfirming ownership of Keyoxide profile"
 
 [taxonomies]
 tags = ["maintainance"]

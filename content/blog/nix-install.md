@@ -132,7 +132,7 @@ export HTTP_PROXY=http://<username>:<password>@proxy.addr:port
 export HTTPS_PROXY=http://<username>:<password>@proxy.addr:port
 bash <(curl -L https://nixos.org/nix/install) --daemon
 ```
-If your username or pasword has special characters, e [percent-encode](https://en.wikipedia.org/wiki/Percent-encoding) them.
+If your username or pasword has special characters, [percent-encode](https://en.wikipedia.org/wiki/Percent-encoding) them.
 
 Open `/etc/systemd/system/nix-daemon.service.d/override.conf` and check that variables `HTTPS_PROXY`, `HTTPS_PROXY` are not messed up.
 Add variable `NIX_SSL_CERT_FILE` to that file and run:
