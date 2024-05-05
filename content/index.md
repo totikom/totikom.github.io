@@ -20,6 +20,7 @@ While not at work, I'm playing with different tech stuff or infodumping my knowl
 - Fediverse: [@totikom@fosstodon.org](https://fosstodon.org/@totikom)
 - Matrix: [@totikom:matrix.org](https://matrix.to/#/@totikom:matrix.org)
 - Reddit: [u/totikom](https://www.reddit.com/user/totikom/)
+
 Other ways to contact me could be found in Keyoxide (see above).
 
 ## Repositories
