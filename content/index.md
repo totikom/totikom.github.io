@@ -8,7 +8,7 @@ IRL may name is Eugene[^1] Lomov and I'm a compiler engineer trying to make DSP 
 
 While not at work, I'm playing with different tech stuff or infodumping my knowledge to those who didn't get away.
 
-[^1] Evgeny, Evgenii or whatever the correct transliteration is.
+[^1]: Evgeny, Evgenii or whatever the correct transliteration is.
 
 # Contacts
 ## Cryptography
