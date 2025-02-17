@@ -9,6 +9,9 @@ compile_sass = true
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = true
 
+generate_feeds = true
+feed_filenames = ["rss.xml", "atom.xml"]
+
 taxonomies = [
     {name = "tags"},
 ]
@@ -41,6 +44,8 @@ menu_items = [
     {name = "tags", url = "$BASE_URL/tags"},
     {name = "archive", url = "$BASE_URL/archive"},
     {name = "about me", url = "$BASE_URL"},
+    {name = "rss", url = "$BASE_URL/rss.xml" },
+    {name = "atom", url = "$BASE_URL/atom.xml" }
 
     # set newtab to true to make the link open in new tab
     #{name = "github", url = "url-to-your-github", newtab = true},
