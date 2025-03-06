@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title></title>
+      <link>https://totikom.github.io/</link>
+      <description></description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://totikom.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Thu, 06 Mar 2025 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Managing multi-device music library via beets and Syncthing</title>
+          <pubDate>Thu, 06 Mar 2025 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://totikom.github.io/blog/beets-syncthing/</link>
+          <guid>https://totikom.github.io/blog/beets-syncthing/</guid>
+          <description xml:base="https://totikom.github.io/blog/beets-syncthing/">&lt;p&gt;I&#x27;m one of those people, who don&#x27;t use streaming services and store all music on my devices.&lt;&#x2F;p&gt;
+&lt;p&gt;At first, I was just downloading it and occasionally copied it from one device to another.
+However, this approach does not scale well.
+Music folders on my devices had quickly became a mess: irregular names, album folders mixed with artist folders, different timestamps on different devices.&lt;&#x2F;p&gt;
+&lt;p&gt;At some point I&#x27;ve found myself downloading the same album three times: first two on different devices, because I&#x27;ve forgot to copy from one to another, and the third one on the phone with this album already available!
+Just because of unintuitive folder name I was unable to locate it.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;beets&quot;&gt;beets&lt;&#x2F;h1&gt;
+&lt;p&gt;To solve it on PC I&#x27;ve started using &lt;a href=&quot;https:&#x2F;&#x2F;beets.io&#x2F;&quot;&gt;beets&lt;&#x2F;a&gt;.
+&lt;code&gt;beets&lt;&#x2F;code&gt; is a nice music management software, which allows you (among lots of otsystema) to move your music to neatly organized folder and correct songs metadata with &lt;a href=&quot;https:&#x2F;&#x2F;musicbrainz.org&#x2F;&quot;&gt;Musicbrainz&lt;&#x2F;a&gt; database.&lt;&#x2F;p&gt;
+&lt;p&gt;It took me several days to import my whole PC collection to &lt;code&gt;beets&lt;&#x2F;code&gt; DB, but, luckly, most of the process was automatic&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-1-1&quot;&gt;&lt;a href=&quot;#fn-1&quot;&gt;[1]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;.
+All I had to do was just:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;beet&lt;&#x2F;span&gt;&lt;span&gt; import&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -q &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;path to music to be imported&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Where &lt;code&gt;-q&lt;&#x2F;code&gt; flag means &quot;skip mismatches and continue without user interaction&quot;.&lt;&#x2F;p&gt;
+&lt;p&gt;After that I&#x27;ve runned &lt;code&gt;beets&lt;&#x2F;code&gt; once again, but without &lt;code&gt;-q&lt;&#x2F;code&gt;  and manually confirmed all uncertainties.&lt;&#x2F;p&gt;
+&lt;p&gt;OK, the biggest part of my music collection got systematized.
+However, it created another problem: during the time collections on the PC and on the phone inevitabily became out of sync.
+The divergence wasn&#x27;t supposed to be significant, but I couldn&#x27;t just delete all music from the phone and reupload systematized collection from PC.&lt;&#x2F;p&gt;
+&lt;p&gt;So, I had to manually replace parts of my collection on the phone adding out of sync albums back to the PC.&lt;&#x2F;p&gt;
+&lt;p&gt;I guess, it took me a week or longer and it was VERY tiresome.&lt;&#x2F;p&gt;
+&lt;p&gt;Now, when I get new music, I immediately pass it through &lt;code&gt;beets&lt;&#x2F;code&gt;, so my collection remains systematized.&lt;&#x2F;p&gt;
+&lt;p&gt;Seems like all the problems are finally solved?
+Ehhh, not exactly.&lt;&#x2F;p&gt;
+&lt;p&gt;Over time my listening habits have changed and now I&#x27;m listening music almost exclusively from my phone.&lt;&#x2F;p&gt;
+&lt;p&gt;More over, I&#x27;m &lt;em&gt;getting&lt;&#x2F;em&gt; music on my phone, so the above &quot;workflow&quot; transforms to:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Get new music on the phone&lt;&#x2F;li&gt;
+&lt;li&gt;Eventually copy it to the PC&lt;&#x2F;li&gt;
+&lt;li&gt;Add the new music to &lt;code&gt;beets&lt;&#x2F;code&gt; library&lt;&#x2F;li&gt;
+&lt;li&gt;Copy library entries back to the phone&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Not very convenient, right?
+That has led to me procrastinating music sync for weeks, which complicated everything, because all music players store tracks in playlists by referencing paths, so moving tracks around cause playlists to break.&lt;&#x2F;p&gt;
+&lt;p&gt;And I had to plug my phone via USB and wait for all the operations to finish!&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;syncthing-to-the-rescue&quot;&gt;Syncthing to the rescue!&lt;&#x2F;h1&gt;
+&lt;p&gt;I knew about &lt;a href=&quot;https:&#x2F;&#x2F;syncthing.net&#x2F;&quot;&gt;syncthing&lt;&#x2F;a&gt; for some time, but hadn&#x27;t found a use for it until resently.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Syncthing&lt;&#x2F;code&gt; is not a cloud, but rather &lt;em&gt;device-to-device&lt;&#x2F;em&gt; synchronization program, which may be not the best variant, if you don&#x27;t have a continuously operating machine, which will serve as &quot;cloud storage&quot;, but for keeping files in sync between devices it is a perfect fit.&lt;&#x2F;p&gt;
+&lt;p&gt;After setting up &lt;code&gt;syncthing&lt;&#x2F;code&gt; on both the PC and the phone, I got (almost) perfect setup for music collection storage and listening:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;The collection is synchronized between devices without manual actions&lt;&#x2F;li&gt;
+&lt;li&gt;No need to connect anything&lt;&#x2F;li&gt;
+&lt;li&gt;I can get music on any device&lt;&#x2F;li&gt;
+&lt;li&gt;I can add music to &lt;code&gt;beets&lt;&#x2F;code&gt; library at any time I&#x27;m near PC: the changes will be synchronized automatically&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;final-setup&quot;&gt;Final setup&lt;&#x2F;h1&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;syncthing&lt;&#x2F;code&gt; is running on both PC and phone&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;beets&lt;&#x2F;code&gt; is used on the PC to keep collection organized&lt;&#x2F;li&gt;
+&lt;li&gt;Any device could be used for downloading music&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;This simple workflow had allowed me to greatly simplify my music collection management and usage.
+Looking back, this workflow looks like pretty obvious, but I hope that it still can help people, who maintains their music library by their own.&lt;&#x2F;p&gt;
+&lt;hr&gt;&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;fn-1&quot;&gt;
+&lt;p&gt;If &lt;code&gt;beets&lt;&#x2F;code&gt; finds a matching album, it imports music automatically, but if match is not close enough, it will ask for user confirmation. &lt;a href=&quot;#fr-1-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+</description>
+      </item>
+      <item>
+          <title>Open lecture about history of computing machinery</title>
+          <pubDate>Sun, 23 Jun 2024 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://totikom.github.io/blog/talks/computer-history/</link>
+          <guid>https://totikom.github.io/blog/talks/computer-history/</guid>
+          <description xml:base="https://totikom.github.io/blog/talks/computer-history/">&lt;p&gt;Two weeks ago I gave a talk about history of computing machinery in &lt;a href=&quot;https:&#x2F;&#x2F;yandex.eu&#x2F;maps&#x2F;org&#x2F;locus_solus&#x2F;1692971085&#x2F;&quot;&gt;Locus Solus&lt;&#x2F;a&gt; book shop.
+&lt;a href=&quot;&#x2F;slides&#x2F;2024-06-08-computer-history.pdf&quot;&gt;slides&lt;&#x2F;a&gt; (in Russian).&lt;&#x2F;p&gt;
+&lt;p&gt;BTW, this presentation is written in &lt;a href=&quot;https:&#x2F;&#x2F;typst.app&#x2F;&quot;&gt;typst&lt;&#x2F;a&gt;, you can check the code in this &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;totikom&#x2F;slides&#x2F;tree&#x2F;main&#x2F;2024-06-08-computer-history&quot;&gt;repo&lt;&#x2F;a&gt; (my other talks are stored there).&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>Open lecture about blockchain</title>
+          <pubDate>Sun, 26 May 2024 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://totikom.github.io/blog/talks/turing-blockchain/</link>
+          <guid>https://totikom.github.io/blog/talks/turing-blockchain/</guid>
+          <description xml:base="https://totikom.github.io/blog/talks/turing-blockchain/">&lt;p&gt;On the 1st of May in collaboration with &quot;Turing&quot; school I gave a lecture about blockhcain internals.
+&lt;a href=&quot;&#x2F;slides&#x2F;2024-05-01-turing-blockchain.pdf&quot;&gt;slides&lt;&#x2F;a&gt; and &lt;a href=&quot;https:&#x2F;&#x2F;youtu.be&#x2F;8OB97iBm31I?si=Wv_4aLTUeiXQy0v0&quot;&gt;video&lt;&#x2F;a&gt; (in Russian).&lt;&#x2F;p&gt;
+&lt;p&gt;BTW, this presentation is written in &lt;a href=&quot;https:&#x2F;&#x2F;typst.app&#x2F;&quot;&gt;typst&lt;&#x2F;a&gt;, you can check the code in this &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;totikom&#x2F;slides&#x2F;tree&#x2F;main&#x2F;2024-05-01-turing-blockchain&quot;&gt;repo&lt;&#x2F;a&gt; (my other talks will likely be stored there).&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>I&#x27;ve started using keyoxide!</title>
+          <pubDate>Sun, 05 May 2024 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://totikom.github.io/blog/maintenance/adding-keyoxide-key/</link>
+          <guid>https://totikom.github.io/blog/maintenance/adding-keyoxide-key/</guid>
+          <description xml:base="https://totikom.github.io/blog/maintenance/adding-keyoxide-key/">&lt;p&gt;-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512&lt;&#x2F;p&gt;
+&lt;p&gt;Hi, it&#x27;s totikom again!
+I want to experiment with Keyoxide, but I don&#x27;t want to mess with my main pgp key, so I&#x27;ve chosen to give ASP a chance.
+By signing this message I comfirm that &lt;a href=&quot;https:&#x2F;&#x2F;keyoxide.org&#x2F;aspe:keyoxide.org:N2JI63C76RTIUDK54WA7COKDLU&quot;&gt;aspe:keyoxide.org:N2JI63C76RTIUDK54WA7COKDLU&lt;&#x2F;a&gt; belongs to me.
+-----BEGIN PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;iQIzBAEBCgAdFiEEy6TRKOobT2dUcgeGWW6nDe2kr+wFAmY3nIMACgkQWW6nDe2k
+r+zRVA&#x2F;+LTPs1TWiBzp+IF1WG1cb94XFY9+oYClZHNFc3HUPBSv3prhd7J8A4YZD
+5fkdlaDIByx1lG+y02cN8TP2knt2DTm6JifGBuw&#x2F;P1gm8dQluyu3VlBmSHSXoV9X
+kUSqBz34aBsVjNuhOliqS0Ooz3tQkEIy1hCB+ktZhyd3JmoieIBHiX9NlsSLktbW
+NQiXM4C4rZFhYLSsy7F7p8JlpSbB3J9avDx04nNL9xDxUunNPnY8WniBQo88VP5h
+biCiwYphOIbuuqMiDXT91tag5YqLcZXKFEFDBySUcT&#x2F;IqVmrnc0tiLcIqvOT5m8L
+KH5wbW4pAuT+dBTcIJKA7gTMv8OHbk3cM8ml7G1n3madOsSFC4&#x2F;7cNDHiT3HE78z
+zsuJvrF&#x2F;tRVK81MN3pnDlZap4e4KOkOrVTHJxAOSUfC1ugvEf+8Hl3wmHaxVN9bf
+aUniT9ISkh34CBpJF94GQnch8r0wBkr&#x2F;EaK7dJjWnjLuwtSDQ7IB034z1vbYQNT2
+y7MPdlHVduHBKHt4y7e0Sp4cVvpgyeZpjkrY+p00uUDh92QkkGuWkv1&#x2F;u7VbpbxX
+K5xvrqa1IHQO0MivJsVcACDrBdJt2tNTu77b8p5CholOYeN87sxFlbpbuKuFGZe4
+cDS1BMigbnYUwYc45yeq8euDr+0F6EehcLXD3DjFT0zhoTl5NWg=
+=RAUE
+-----END PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;You can also check out original &lt;a href=&quot;&#x2F;2024-05-05-adding_keyoxide_key.txt&quot;&gt;message&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>Installing nix the hard way</title>
+          <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://totikom.github.io/blog/nix-install/</link>
+          <guid>https://totikom.github.io/blog/nix-install/</guid>
+          <description xml:base="https://totikom.github.io/blog/nix-install/">&lt;h1 id=&quot;why-bother-with-all-that-staff&quot;&gt;Why bother with all that staff?&lt;&#x2F;h1&gt;
+&lt;p&gt;People talk a lot about Nix and how it helps to build reproducible environments.
+Nix community is so focused on reproducibility, that using &lt;code&gt;nix-env&lt;&#x2F;code&gt; is considered a &lt;a href=&quot;https:&#x2F;&#x2F;stop-using-nix-env.privatevoid.net&#x2F;&quot;&gt;bad&lt;&#x2F;a&gt; practice.&lt;&#x2F;p&gt;
+&lt;p&gt;However, reproducibility is not the only positive feature of &lt;code&gt;nix&lt;&#x2F;code&gt;.
+Another important feature is &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;multi-user.html&quot;&gt;multi-user mode&lt;&#x2F;a&gt;.
+This may not sound very useful for individuals, but I think, that for big companies it is a dealbreaker.&lt;&#x2F;p&gt;
+&lt;p&gt;Just think about it!
+For IT companies it is a common situation when several developers work on a single remote machine.
+For stability, and other Important Reasons™ such machines rarely have updated software.&lt;&#x2F;p&gt;
+&lt;p&gt;Either for compatibility with some production code, or because of security policies, this servers are not just outdated, but the updates are intentionally disabled.&lt;&#x2F;p&gt;
+&lt;p&gt;They may even be disconnected from the internet, allowing access only to the company&#x27;s internal network.&lt;&#x2F;p&gt;
+&lt;p&gt;Even if updates were possible, they would be very risky: updating one package may require updating its dependencies and therefore other packages which depend on them.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Partial updates are not supported.&lt;&#x2F;p&gt;
+&lt;p&gt;© ArchWiki&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Of course, package manager will resolve such conflicts and just updates everything.&lt;&#x2F;p&gt;
+&lt;p&gt;...probably breaking someone else&#x27;s environment.
+So, updates are often restricted.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;installation&quot;&gt;Installation&lt;&#x2F;h1&gt;
+&lt;p&gt;A few days ago I&#x27;ve explained this to the management and today I was finally given access to proxy, which will allow me to download things from the internet.&lt;&#x2F;p&gt;
+&lt;p&gt;First of all, I had to download the installer, as stated in the official &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;#multi-user&quot;&gt;guides&lt;&#x2F;a&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bash &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -L&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;nix&#x2F;install)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --daemon
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Of course, it didn&#x27;t work without configuring the proxy, so actually I had to do:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTP_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTPS_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bash &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -L&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;nix&#x2F;install)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --daemon
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And...
+It still hasn&#x27;t worked!
+&lt;code&gt;curl&lt;&#x2F;code&gt; failed with a cryptic error saying that &lt;code&gt;&amp;lt;my username&amp;gt;:&lt;&#x2F;code&gt; (yes, with colon) is not a valid port number.
+WTF!?&lt;&#x2F;p&gt;
+&lt;p&gt;My password has special characters.
+Maybe they were not property escaped?&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ve tried, but without success.
+After a bit of digging I&#x27;ve found that (it looks very obvious now) &lt;code&gt;HTTP_PROXY&lt;&#x2F;code&gt; variable is parsed as URL and therefore all special characters have to be &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Percent-encoding&quot;&gt;percent-encoded&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;OK... I&#x27;ve redefined proxy variables and installation script was finally downloaded.
+The script started working and have downloaded the tarball.
+I&#x27;ve entered &lt;code&gt;sudo&lt;&#x2F;code&gt; password, it successfully created users and copied files from the package to &lt;code&gt;&#x2F;nix&lt;&#x2F;code&gt; directory.
+Everything was fine until it runned &lt;code&gt;nix-channel --update nixpkgs&lt;&#x2F;code&gt;.
+Nothing happened for a while, when a connection timeout warning appeared.&lt;&#x2F;p&gt;
+&lt;p&gt;That looked suspiciously like a proxy failure.
+I&#x27;ve added &lt;code&gt;--no-channel-add&lt;&#x2F;code&gt; flag to the install script, so that it will skip this step, uninstalled everything &lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-1-1&quot;&gt;&lt;a href=&quot;#fn-1&quot;&gt;[1]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; as explained in the &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;uninstall#linux&quot;&gt;docs&lt;&#x2F;a&gt; and started from the begining.&lt;&#x2F;p&gt;
+&lt;p&gt;The installation seemed to succeed this time, so I&#x27;ve started a new shell and did:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --add&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;channels&#x2F;nixpkgs-unstable nixpkgs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But it failed because of insufficient permissions.
+Of course!
+I forgot to add my user to the right group.&lt;&#x2F;p&gt;
+&lt;p&gt;According to the &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;multi-user#restricting-access&quot;&gt;manual&lt;&#x2F;a&gt;, only users who have write permission to &lt;code&gt;&#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket&lt;&#x2F;code&gt; are allowed to work in multi-user mode.
+I&#x27;ve already had &lt;code&gt;users&lt;&#x2F;code&gt; group, so I did just:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chgrp users &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chmod ug=rwx,o= &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now my user had enough permissions and I was able to run &lt;code&gt;nix-channel&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --add&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;channels&#x2F;nixpkgs-unstable nixpkgs
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --update&lt;&#x2F;span&gt;&lt;span&gt; nixpkgs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As previously happend in the istall script, &lt;code&gt;--update &lt;&#x2F;code&gt; command hanged.
+I&#x27;ve started searching, how people deal with proxies in Nix.
+Among others, I&#x27;ve found &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;NixOS&#x2F;nix&#x2F;pull&#x2F;2946&#x2F;files&quot;&gt;this&lt;&#x2F;a&gt; PR, which explicitly add support for proxies, but, as far as I can tell, only for &lt;code&gt;nix-daemon&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ve added &lt;code&gt;HTTP_PROXY&lt;&#x2F;code&gt; and &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt; vars and tried again.
+This time I&#x27;ve got a different error: &lt;code&gt;nix-channel&lt;&#x2F;code&gt; was complaining about bad SSL cert.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;here-comes-the-funny-part&quot;&gt;Here comes the funny part...&lt;&#x2F;h1&gt;
+&lt;p&gt;Well, our machines are not only behind proxy, they are behind MITM-proxy.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;curl&lt;&#x2F;code&gt; and other installed software works fine, because they use system-wide CA bundles, but Nix comes with its own certificates.&lt;&#x2F;p&gt;
+&lt;p&gt;After some googling I&#x27;ve found &lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; variable and tried to set it.
+It worked!
+The channel was successully updated and with a feel of acomplishment I&#x27;ve issued &lt;code&gt;nix-shell -p vim&lt;&#x2F;code&gt; to try it out.&lt;&#x2F;p&gt;
+&lt;p&gt;The command was silent for almost a minute, then I saw a familiar timeout error.
+But I&#x27;ve configured the proxy vars!
+They were definetly passed to the systemd override, the installer has clearly shown it (I still had the installer output in the unclosed term).&lt;&#x2F;p&gt;
+&lt;p&gt;In a fit of suspiciousness I&#x27;ve opened override file.
+At first glance, everything seemed fine, proxy variables were set, but the password field in the URLs looked a bit strange.
+I&#x27;ve taken a closer look and found that nix installer has reencoded my percent-encoded characters and messed them up!
+I&#x27;ve also remembered the certificate thing, so I&#x27;ve also add &lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; variable to the override.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl daemon-reload
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl restart nix-daemon.service
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And finaly &lt;code&gt;nix-env -i vim&lt;&#x2F;code&gt;&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-2-1&quot;&gt;&lt;a href=&quot;#fn-2&quot;&gt;[2]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; worked!
+Initial enviroment installation was a bit slow, but it worked!
+It took me a whole working day to do this &lt;em&gt;simple&lt;&#x2F;em&gt; install...&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;tl-dr&quot;&gt;TL;DR:&lt;&#x2F;h1&gt;
+&lt;p&gt;If you need to install &lt;code&gt;nix&lt;&#x2F;code&gt;  in multi-user mode behind MITM-proxy, do the following:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTP_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTPS_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bash &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -L&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;nix&#x2F;install)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --daemon
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If your username or pasword has special characters, &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Percent-encoding&quot;&gt;percent-encode&lt;&#x2F;a&gt; them.&lt;&#x2F;p&gt;
+&lt;p&gt;Open &lt;code&gt;&#x2F;etc&#x2F;systemd&#x2F;system&#x2F;nix-daemon.service.d&#x2F;override.conf&lt;&#x2F;code&gt; and check that variables &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt;, &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt; are not messed up.
+Add variable &lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; to that file and run:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl daemon-reload
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl restart nix-daemon.service
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then add &lt;code&gt;nix-socket&lt;&#x2F;code&gt; to the right group:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chgrp nix-users &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chmod ug=rwx,o= &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In a new shell set &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt;, &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt; and&lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; variables&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-3-1&quot;&gt;&lt;a href=&quot;#fn-3&quot;&gt;[3]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; and run:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --add&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;channels&#x2F;nixpkgs-unstable nixpkgs
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --update&lt;&#x2F;span&gt;&lt;span&gt; nixpkgs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;That&#x27;s it!
+&lt;code&gt;nix&lt;&#x2F;code&gt; is installed on your system.&lt;&#x2F;p&gt;
+&lt;hr&gt;&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;fn-1&quot;&gt;
+&lt;p&gt;without that the script will complain about existing installation. &lt;a href=&quot;#fr-1-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li id=&quot;fn-2&quot;&gt;
+&lt;p&gt;again, I know that using &lt;code&gt;nix-env&lt;&#x2F;code&gt; is discouraged, but for my particular setup it is more suitable. &lt;a href=&quot;#fr-2-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li id=&quot;fn-3&quot;&gt;
+&lt;p&gt;you need to set this variables only for operations with &lt;code&gt;nix-channel&lt;&#x2F;code&gt;. &lt;code&gt;nix-env&lt;&#x2F;code&gt; and &lt;code&gt;nix-shell&lt;&#x2F;code&gt; works without them. &lt;a href=&quot;#fr-3-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+</description>
+      </item>
+      <item>
+          <title>Site ownership proof</title>
+          <pubDate>Sun, 07 Apr 2024 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://totikom.github.io/blog/maintenance/initial-signature/</link>
+          <guid>https://totikom.github.io/blog/maintenance/initial-signature/</guid>
+          <description xml:base="https://totikom.github.io/blog/maintenance/initial-signature/">&lt;p&gt;-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512&lt;&#x2F;p&gt;
+&lt;p&gt;Hi. This is totikom and by signing this message, I confirm that &lt;a href=&quot;https:&#x2F;&#x2F;totikom.github.io&#x2F;&quot;&gt;this&lt;&#x2F;a&gt; site belongs to me.
+-----BEGIN PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;iQIzBAEBCgAdFiEEy6TRKOobT2dUcgeGWW6nDe2kr+wFAmYSp6gACgkQWW6nDe2k
+r+wruw&#x2F;&#x2F;W96N22LAYDKsmdtUacU&#x2F;BbjFoKHPExuuUfYlBMru7wacyyf0FRhKBg9M
+roeW+Xruaoq&#x2F;ZoiBLARvYzdOFm1TnymCvrhO6uXhf7Ag9wpUpdAqoy5IDphjF5eQ
+u&#x2F;h+BrQs9TvkowDf202Fnmw1TBg1BcI&#x2F;WMZk5Itn4TPLtzdplGkvVMR&#x2F;j5DOckNQ
+UJ+MchY1xZvXhGd8stIvM718SHM6ExuRJHGIiAPzwTfsUIIenn1zFXZ9NeHwFMoP
+qx&#x2F;smmiWMnhTn9WJyyeMGSPgMZUw+y1KgNDLua33+k44vz4Ts6ZJpMBJ6o9YvpWB
+x1dQZTRMy8T1Z16GFv2gDgy4PAKl526O4MArFLv&#x2F;11stUo8HUNtk70e3lJdkAPt0
+rOBtrtDu2DjPnKPakNyR552dmLBniTBccjx+OQFh89PKV723TsFBr1AuvX3RRzMU
+l7OTH7Kt5iftZCJDGc8tRfLLvwCv75lmrOopccc&#x2F;qwhjyqbhN2vecHrZADUTRCLu
+cZ+A2fIep4faPFDnFFwz5kgjz9goVOLRx&#x2F;l&#x2F;RMJLsibWzZvN6SQ1DJMHWf3N2row
+Q3qo+eXoKmsKIr8QO0ccakpYR1dbH+DyRYNUhdwbISKcUNZ4OmlA1pZprDmxdHXe
+LVNepBYKHZTgKF5kxNtrJlfWQfBmSEuU6+fgCjmLttXme1zdPA8=
+=EmDk
+-----END PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;You can also check out original &lt;a href=&quot;&#x2F;2024-04-07-initial_signature.txt&quot;&gt;message&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>
