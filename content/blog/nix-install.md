@@ -160,3 +160,5 @@ That's it!
 [^1]: without that the script will complain about existing installation.
 [^2]: again, I know that using `nix-env` is discouraged, but for my particular setup it is more suitable.
 [^3]: you need to set this variables only for operations with `nix-channel`. `nix-env` and `nix-shell` works without them.
+
+---
