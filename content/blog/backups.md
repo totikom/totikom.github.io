@@ -195,3 +195,5 @@ Thanks to snapshots, I do not need to worry about the moment, when I need to bac
 If I update some file, the previous version will still be in the snapshots, so it will still be backed up, even if the changes were made _before_ actual backup.
 
 For me, it is a killer-feature and I am very proud, that I've came up with this setup.
+
+---
