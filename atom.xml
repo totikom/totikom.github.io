@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title></title>
+    <link rel="self" type="application/atom+xml" href="https://totikom.github.io/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://totikom.github.io/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-04-06T00:00:00+00:00</updated>
+    <id>https://totikom.github.io/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Update PGP subkeys</title>
+        <published>2025-04-06T00:00:00+00:00</published>
+        <updated>2025-04-06T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/maintenance/update-subkeys/"/>
+        <id>https://totikom.github.io/blog/maintenance/update-subkeys/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/maintenance/update-subkeys/">&lt;p&gt;I&#x27;ve generated new signing PGP subkey &lt;code&gt;278846A1C91B3184&lt;&#x2F;code&gt;, it will be used in all new commits and other stuff.
+Previous subkey &lt;code&gt;596EA70DEDA4AFEC&lt;&#x2F;code&gt; will no longer be used.
+Expirity date on this key is changed, so that old commits will not be flagged as expired.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Backups made easy: btrfs + snapper + snapborg</title>
+        <published>2025-03-29T00:00:00+00:00</published>
+        <updated>2025-03-29T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/backups/"/>
+        <id>https://totikom.github.io/blog/backups/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/backups/">&lt;p&gt;Almost half a year ago I&#x27;ve switched from Manjaro to ArchLinux. One of the triggers for that switch was an urge to try CoW file system, mainly &lt;a href=&quot;https:&#x2F;&#x2F;wiki.archlinux.org&#x2F;title&#x2F;Btrfs&quot;&gt;btrfs&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;system-installation-and-subvolume-layout&quot;&gt;System installation and subvolume layout&lt;&#x2F;h1&gt;
+&lt;p&gt;Basically, I&#x27;ve followed this &lt;a href=&quot;https:&#x2F;&#x2F;walian.co.uk&#x2F;arch-install-with-secure-boot-btrfs-tpm2-luks-encryption-unified-kernel-images.html&quot;&gt;tutorial&lt;&#x2F;a&gt;:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Created 2GB FAT partition for EFI&lt;&#x2F;li&gt;
+&lt;li&gt;Encrypted the rest of my disk with &lt;code&gt;cryptsetup&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;Formatted it to &lt;code&gt;btrfs&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;Created a set of subvolumes, mainly:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;@&lt;&#x2F;code&gt; for rootfs&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;@home&lt;&#x2F;code&gt; for home folders&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;@home_unbacked&lt;&#x2F;code&gt; user files, which won&#x27;t be backed up (more about it later)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;@var&lt;&#x2F;code&gt; for &lt;code&gt;&#x2F;var&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;@var_log&lt;&#x2F;code&gt; for logs&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;@var_pkgs&lt;&#x2F;code&gt; for &lt;code&gt;pacman&lt;&#x2F;code&gt; cache&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;This massive number of subvolumes is needed to allow fine-grained backups without wasting space for unneeded data.&lt;&#x2F;p&gt;
+&lt;p&gt;For instance,  you most likely won&#x27;t need a backup of &lt;code&gt;pacman&lt;&#x2F;code&gt; cache, as you can download old versions of the packages form official archives, however you most likely need a backup of your &lt;code&gt;&#x2F;bin&#x2F;&lt;&#x2F;code&gt;,&lt;code&gt;&#x2F;lib&#x2F;&lt;&#x2F;code&gt;, &lt;code&gt;&#x2F;usr&#x2F;&lt;&#x2F;code&gt; and &lt;code&gt;&#x2F;etc&#x2F;&lt;&#x2F;code&gt; folders, because they contain files, essential for your system operation.&lt;&#x2F;p&gt;
+&lt;p&gt;The separation of &lt;code&gt;&#x2F;&lt;&#x2F;code&gt; and &lt;code&gt;&#x2F;home&#x2F;&lt;&#x2F;code&gt; backups is necessary, because they could have different retention policies.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;@home_unbacked&lt;&#x2F;code&gt; subvolume is mounted to &lt;code&gt;&#x2F;home&#x2F;.unbacked_files&#x2F;&lt;&#x2F;code&gt; directory, where each user have its own subdirectory.
+They can symlink to this folder those files, which they don&#x27;t need to back up.
+For instance, my &lt;code&gt;~&#x2F;Videos&#x2F;&lt;&#x2F;code&gt; , &lt;code&gt;~&#x2F;Music&#x2F;&lt;&#x2F;code&gt; and &lt;code&gt;~&#x2F;.cache&lt;&#x2F;code&gt; folders are symlinked to &lt;code&gt;.unbacked_files&lt;&#x2F;code&gt;, so they will not waste space on the backup drive.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;snapper&quot;&gt;snapper&lt;&#x2F;h1&gt;
+&lt;p&gt;Of course, you can do snapshots manually with &lt;code&gt;btrfs subvolume snapshot &amp;lt;subvolume&amp;gt; &amp;lt;destination path&amp;gt;&lt;&#x2F;code&gt;, be it is very verbose.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;snapper&lt;&#x2F;code&gt; is a small program for automating this task.
+Basically, it manages 2 things:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Automatic snapshot creation: time-based and as a pacman hook&lt;&#x2F;li&gt;
+&lt;li&gt;Automatic removal of old snapshot based on different retention policies&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;My  &lt;code&gt;snapper&lt;&#x2F;code&gt; config looks like this:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# subvolume to snapshot
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SUBVOLUME&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# filesystem type
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;FSTYPE&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;btrfs&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# fraction or absolute size of the filesystems space the snapshots may use
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SPACE_LIMIT&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0.5&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# fraction or absolute size of the filesystems space that should be free
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;FREE_LIMIT&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0.2&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# create hourly snapshots
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_CREATE&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;yes&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# cleanup hourly snapshots after some time
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_CLEANUP&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;yes&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# limits for timeline cleanup
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_MIN_AGE&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;1800&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_LIMIT_HOURLY&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_LIMIT_DAILY&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;7&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_LIMIT_WEEKLY&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_LIMIT_MONTHLY&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TIMELINE_LIMIT_YEARLY&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;With this config you&#x27;ll have a hourly snapshots and a sane retention policy.&lt;&#x2F;p&gt;
+&lt;p&gt;However, &lt;strong&gt;snapshots are not backups&lt;&#x2F;strong&gt;.
+They&#x27;ll save you from accidental file deletion or system misconfiguration, but not from disk failure.&lt;&#x2F;p&gt;
+&lt;p&gt;To truly have a backup, you&#x27;ll need a separate drive, which stores you snapshots.&lt;&#x2F;p&gt;
+&lt;p&gt;Luckily, &lt;code&gt;btrfs&lt;&#x2F;code&gt; allows you to send subvolumes (or snapshots) to different devices.&lt;&#x2F;p&gt;
+&lt;p&gt;With &lt;code&gt;btrfs send&lt;&#x2F;code&gt; you can copy the entire subvolume to &lt;code&gt;stdout&lt;&#x2F;code&gt; and receive it with &lt;code&gt;btrfs receive&lt;&#x2F;code&gt; on the backup drive.&lt;&#x2F;p&gt;
+&lt;p&gt;So, with another (ideally, offline) &lt;code&gt;btrfs&lt;&#x2F;code&gt; disk your snapshots will be backed up and deduplicated thanks to copy-on-write semantics.&lt;&#x2F;p&gt;
+&lt;p&gt;However, this approach has several downsides:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Backup drive &lt;strong&gt;must&lt;&#x2F;strong&gt; be formatted as &lt;code&gt;btrfs&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;Snapshots have to be moved manually&lt;&#x2F;li&gt;
+&lt;li&gt;Storing backups of several subvolumes will be a mess&lt;&#x2F;li&gt;
+&lt;li&gt;You&#x27;ll have to manually remove old snapshots&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h1 id=&quot;borg&quot;&gt;borg&lt;&#x2F;h1&gt;
+&lt;p&gt;I&#x27;m using &lt;a href=&quot;https:&#x2F;&#x2F;borgbackup.readthedocs.io&#x2F;en&#x2F;stable&#x2F;&quot;&gt;borg&lt;&#x2F;a&gt; as my main backup utility for several years already.
+It has all the backing up features I have ever needed:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;block-level deduplication&lt;&#x2F;li&gt;
+&lt;li&gt;backup compression&lt;&#x2F;li&gt;
+&lt;li&gt;does not depend on the file system: &lt;code&gt;borg&lt;&#x2F;code&gt; archive is just a folder with files, no hardlinks, symlinks of other special features&lt;&#x2F;li&gt;
+&lt;li&gt;has rich retention policy settings&lt;&#x2F;li&gt;
+&lt;li&gt;possibility to mount backups as FUSE file systems&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Before I&#x27;ve moved to &lt;code&gt;btrfs&lt;&#x2F;code&gt;, I&#x27;ve used &lt;code&gt;borg&lt;&#x2F;code&gt; to backup my entire system drive like this:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#!&#x2F;bin&#x2F;bash
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TARGET&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;path&#x2F;to&#x2F;borg&#x2F;archive
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;BACKUPS&lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;dirs&lt;&#x2F;span&gt;&lt;span&gt; to be backed up
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;BORG_PASSPHRASE&lt;&#x2F;span&gt;&lt;span&gt;=&amp;lt;passphrase&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;borg&lt;&#x2F;span&gt;&lt;span&gt; create&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --stats --progress &lt;&#x2F;span&gt;&lt;span&gt;\
+&lt;&#x2F;span&gt;&lt;span&gt;	$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TARGET&lt;&#x2F;span&gt;&lt;span&gt;::{now} \
+&lt;&#x2F;span&gt;&lt;span&gt;	$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;BACKUPS &lt;&#x2F;span&gt;&lt;span&gt;\
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;	--exclude-from&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;path&#x2F;to&#x2F;exclusions&#x2F;file
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And it was very convenient: I&#x27;ve added this script to &lt;code&gt;cron&lt;&#x2F;code&gt; and it did everything automatically.&lt;&#x2F;p&gt;
+&lt;p&gt;Occasionally, I&#x27;ve run &lt;code&gt;borg prune -v --list --stats $PRUNE_OPTS $TARGET&lt;&#x2F;code&gt; to delete old backups.
+In this command &lt;code&gt;PRUNE_OPTS&lt;&#x2F;code&gt; is a variable, which contained retention policies.
+In my case they were:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-d 1&lt;&#x2F;code&gt; keep a single backup for the last day&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;-w 8&lt;&#x2F;code&gt; keep a single backup for each of the last 8 weeks&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;-m 6&lt;&#x2F;code&gt; keep a single backup for each of the last 6 months&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;-y 5&lt;&#x2F;code&gt; keep a single backup for each of the last 5 years&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;For general file systems it is already a very good solution, but with &lt;code&gt;btrfs&lt;&#x2F;code&gt; we can do better:&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;snapborg&quot;&gt;snapborg&lt;&#x2F;h1&gt;
+&lt;p&gt;Actually, &lt;code&gt;borg&lt;&#x2F;code&gt; can backup not only directories, but also the entire block devices and even &lt;code&gt;stdin&lt;&#x2F;code&gt;&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-1-1&quot;&gt;&lt;a href=&quot;#fn-1&quot;&gt;[1]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;This means that at least we can pipe &lt;code&gt;btrfs send&lt;&#x2F;code&gt; to &lt;code&gt;borg&lt;&#x2F;code&gt;, but this way we will not be able to mount subvolumes.&lt;&#x2F;p&gt;
+&lt;p&gt;Luckily, we can instruct  &lt;code&gt;borg&lt;&#x2F;code&gt;  to backup snapshot volumes discarding path to subvolumes, so from the &lt;code&gt;borg&lt;&#x2F;code&gt;&#x27;s point of view, snapshots are different states of a single file system instead of different subfolders.&lt;&#x2F;p&gt;
+&lt;p&gt;And this is already implemented in &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;enzingerm&#x2F;snapborg&quot;&gt;snapborg&lt;&#x2F;a&gt;!&lt;&#x2F;p&gt;
+&lt;p&gt;More over, it is implemented in a fail-safe way: before starting back up &lt;code&gt;snapborg&lt;&#x2F;code&gt; disables retention policies on snapshots to be backed up, so they will not be removed during backup process.
+After backing everything up it will return retention policies back to the previous values.&lt;&#x2F;p&gt;
+&lt;p&gt;My &lt;code&gt;snapborg&lt;&#x2F;code&gt; config looks like this (it is slightly edited example config &lt;code&gt;snapborg&lt;&#x2F;code&gt; repo):&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# snapborg sample configuration file. Default values are used for the sample
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# configuration, thus can be omitted or changed
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# List of mappings of snapper configs to their borg repos
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;configs&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# MANDATORY: name of the snapper config
+&lt;&#x2F;span&gt;&lt;span&gt;  - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;root
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# MANDATORY: borg repo target, e. g. backupuser@backuphost:reponame
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repo&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;path&#x2F;to&#x2F;borg&#x2F;repo
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# if this is set to true, borg does not neccessarily fail when a backup fails
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fault_tolerant_mode&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;false
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# snapborg fails when the most recent snapshot transferred successfully is
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# older than the time period given here. Set to &amp;#39;0d&amp;#39; to disable this behaviour
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;last_backup_max_age&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0d
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# archive creation&#x2F;storage options
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;storage&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# use either none or repokey encryption, defaults to none
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;encryption&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;repokey
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# MANDATORY when using repokey: literal key passphrase or path to file
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# containing the key passphrase. Ignored when using none encryption
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;encryption_passphrase&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&amp;lt;my borg passphrase&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# compression configuration, see borg manual
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;compression&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;auto,zstd,4
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# define retention settings for borg independently from snapper
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;retention&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;keep_last&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;keep_hourly&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;keep_daily&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;keep_weekly&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;8
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;keep_monthly&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;6
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;keep_yearly&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;5
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# exclude patterns (see borg help patterns)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;exclude_patterns&lt;&#x2F;span&gt;&lt;span&gt;: []
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Whey you run &lt;code&gt;snapborg backup&lt;&#x2F;code&gt;, it will get a list of local snapshots, merge it with the list of backups from &lt;code&gt;borg&lt;&#x2F;code&gt; archive and determine, which snapshots actually  need to be backed up (i.e. will not be immediately deleted by retention policy).
+It will disable retention policy for this snapshots and back up them to &lt;code&gt;borg&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;When the snapshots are backed up to &lt;code&gt;borg&lt;&#x2F;code&gt; archive, &lt;code&gt;snapborg&lt;&#x2F;code&gt; will run &lt;code&gt;borg prune&lt;&#x2F;code&gt; with the retention policy from the config, removing backups, which are no longer needed.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;final-workflow&quot;&gt;Final workflow&lt;&#x2F;h1&gt;
+&lt;p&gt;With &lt;code&gt;btrfs&lt;&#x2F;code&gt;, &lt;code&gt;snapper&lt;&#x2F;code&gt; and &lt;code&gt;snapborg&lt;&#x2F;code&gt; I have a very easy to use backup system:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;snapper&lt;&#x2F;code&gt; automatically&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-2-1&quot;&gt;&lt;a href=&quot;#fn-2&quot;&gt;[2]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; create &lt;code&gt;btrfs&lt;&#x2F;code&gt; snapshots and take care of removing the old ones&lt;&#x2F;li&gt;
+&lt;li&gt;occasionally I connect my backup hard drive to the laptop and run &lt;code&gt;snapborg backup&lt;&#x2F;code&gt;, so that the snapshots are backed up.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;... and that&#x27;s it!
+That&#x27;s all the things, which I need to do, to maintain my backup chores.&lt;&#x2F;p&gt;
+&lt;p&gt;Thanks to snapshots, I do not need to worry about the moment, when I need to back them up.
+If I update some file, the previous version will still be in the snapshots, so it will still be backed up, even if the changes were made &lt;em&gt;before&lt;&#x2F;em&gt; actual backup.&lt;&#x2F;p&gt;
+&lt;p&gt;For me, it is a killer-feature and I am very proud, that I&#x27;ve came up with this setup.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;hr&gt;&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;fn-1&quot;&gt;
+&lt;p&gt;you can pipe some data to it and it will be stored as &lt;code&gt;stdin&lt;&#x2F;code&gt; file in the &lt;code&gt;borg&lt;&#x2F;code&gt; archive &lt;a href=&quot;#fr-1-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li id=&quot;fn-2&quot;&gt;
+&lt;p&gt;via &lt;code&gt;systemd&lt;&#x2F;code&gt;  service &lt;a href=&quot;#fr-2-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Managing multi-device music library via beets and Syncthing</title>
+        <published>2025-03-06T00:00:00+00:00</published>
+        <updated>2025-03-06T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/beets-syncthing/"/>
+        <id>https://totikom.github.io/blog/beets-syncthing/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/beets-syncthing/">&lt;p&gt;I&#x27;m one of those people, who don&#x27;t use streaming services and store all music on my devices.&lt;&#x2F;p&gt;
+&lt;p&gt;At first, I was just downloading it and occasionally copied it from one device to another.
+However, this approach does not scale well.
+Music folders on my devices had quickly became a mess: irregular names, album folders mixed with artist folders, different timestamps on different devices.&lt;&#x2F;p&gt;
+&lt;p&gt;At some point I&#x27;ve found myself downloading the same album three times: first two on different devices, because I&#x27;ve forgot to copy from one to another, and the third one on the phone with this album already available!
+Just because of unintuitive folder name I was unable to locate it.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;beets&quot;&gt;beets&lt;&#x2F;h1&gt;
+&lt;p&gt;To solve it on PC I&#x27;ve started using &lt;a href=&quot;https:&#x2F;&#x2F;beets.io&#x2F;&quot;&gt;beets&lt;&#x2F;a&gt;.
+&lt;code&gt;beets&lt;&#x2F;code&gt; is a nice music management software, which allows you (among lots of otsystema) to move your music to neatly organized folder and correct songs metadata with &lt;a href=&quot;https:&#x2F;&#x2F;musicbrainz.org&#x2F;&quot;&gt;Musicbrainz&lt;&#x2F;a&gt; database.&lt;&#x2F;p&gt;
+&lt;p&gt;It took me several days to import my whole PC collection to &lt;code&gt;beets&lt;&#x2F;code&gt; DB, but, luckly, most of the process was automatic&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-1-1&quot;&gt;&lt;a href=&quot;#fn-1&quot;&gt;[1]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;.
+All I had to do was just:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;beet&lt;&#x2F;span&gt;&lt;span&gt; import&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -q &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;path to music to be imported&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Where &lt;code&gt;-q&lt;&#x2F;code&gt; flag means &quot;skip mismatches and continue without user interaction&quot;.&lt;&#x2F;p&gt;
+&lt;p&gt;After that I&#x27;ve runned &lt;code&gt;beets&lt;&#x2F;code&gt; once again, but without &lt;code&gt;-q&lt;&#x2F;code&gt;  and manually confirmed all uncertainties.&lt;&#x2F;p&gt;
+&lt;p&gt;OK, the biggest part of my music collection got systematized.
+However, it created another problem: during the time collections on the PC and on the phone inevitabily became out of sync.
+The divergence wasn&#x27;t supposed to be significant, but I couldn&#x27;t just delete all music from the phone and reupload systematized collection from PC.&lt;&#x2F;p&gt;
+&lt;p&gt;So, I had to manually replace parts of my collection on the phone adding out of sync albums back to the PC.&lt;&#x2F;p&gt;
+&lt;p&gt;I guess, it took me a week or longer and it was VERY tiresome.&lt;&#x2F;p&gt;
+&lt;p&gt;Now, when I get new music, I immediately pass it through &lt;code&gt;beets&lt;&#x2F;code&gt;, so my collection remains systematized.&lt;&#x2F;p&gt;
+&lt;p&gt;Seems like all the problems are finally solved?
+Ehhh, not exactly.&lt;&#x2F;p&gt;
+&lt;p&gt;Over time my listening habits have changed and now I&#x27;m listening music almost exclusively from my phone.&lt;&#x2F;p&gt;
+&lt;p&gt;More over, I&#x27;m &lt;em&gt;getting&lt;&#x2F;em&gt; music on my phone, so the above &quot;workflow&quot; transforms to:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Get new music on the phone&lt;&#x2F;li&gt;
+&lt;li&gt;Eventually copy it to the PC&lt;&#x2F;li&gt;
+&lt;li&gt;Add the new music to &lt;code&gt;beets&lt;&#x2F;code&gt; library&lt;&#x2F;li&gt;
+&lt;li&gt;Copy library entries back to the phone&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Not very convenient, right?
+That has led to me procrastinating music sync for weeks, which complicated everything, because all music players store tracks in playlists by referencing paths, so moving tracks around cause playlists to break.&lt;&#x2F;p&gt;
+&lt;p&gt;And I had to plug my phone via USB and wait for all the operations to finish!&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;syncthing-to-the-rescue&quot;&gt;Syncthing to the rescue!&lt;&#x2F;h1&gt;
+&lt;p&gt;I knew about &lt;a href=&quot;https:&#x2F;&#x2F;syncthing.net&#x2F;&quot;&gt;syncthing&lt;&#x2F;a&gt; for some time, but hadn&#x27;t found a use for it until resently.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Syncthing&lt;&#x2F;code&gt; is not a cloud, but rather &lt;em&gt;device-to-device&lt;&#x2F;em&gt; synchronization program, which may be not the best variant, if you don&#x27;t have a continuously operating machine, which will serve as &quot;cloud storage&quot;, but for keeping files in sync between devices it is a perfect fit.&lt;&#x2F;p&gt;
+&lt;p&gt;After setting up &lt;code&gt;syncthing&lt;&#x2F;code&gt; on both the PC and the phone, I got (almost) perfect setup for music collection storage and listening:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;The collection is synchronized between devices without manual actions&lt;&#x2F;li&gt;
+&lt;li&gt;No need to connect anything&lt;&#x2F;li&gt;
+&lt;li&gt;I can get music on any device&lt;&#x2F;li&gt;
+&lt;li&gt;I can add music to &lt;code&gt;beets&lt;&#x2F;code&gt; library at any time I&#x27;m near PC: the changes will be synchronized automatically&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;final-setup&quot;&gt;Final setup&lt;&#x2F;h1&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;syncthing&lt;&#x2F;code&gt; is running on both PC and phone&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;beets&lt;&#x2F;code&gt; is used on the PC to keep collection organized&lt;&#x2F;li&gt;
+&lt;li&gt;Any device could be used for downloading music&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;This simple workflow had allowed me to greatly simplify my music collection management and usage.
+Looking back, this workflow looks like pretty obvious, but I hope that it still can help people, who maintains their music library by their own.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;hr&gt;&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;fn-1&quot;&gt;
+&lt;p&gt;If &lt;code&gt;beets&lt;&#x2F;code&gt; finds a matching album, it imports music automatically, but if match is not close enough, it will ask for user confirmation. &lt;a href=&quot;#fr-1-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Open lecture about history of computing machinery</title>
+        <published>2024-06-23T00:00:00+00:00</published>
+        <updated>2024-06-23T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/talks/computer-history/"/>
+        <id>https://totikom.github.io/blog/talks/computer-history/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/talks/computer-history/">&lt;p&gt;Two weeks ago I gave a talk about history of computing machinery in &lt;a href=&quot;https:&#x2F;&#x2F;yandex.eu&#x2F;maps&#x2F;org&#x2F;locus_solus&#x2F;1692971085&#x2F;&quot;&gt;Locus Solus&lt;&#x2F;a&gt; book shop.
+&lt;a href=&quot;&#x2F;slides&#x2F;2024-06-08-computer-history.pdf&quot;&gt;slides&lt;&#x2F;a&gt; (in Russian).&lt;&#x2F;p&gt;
+&lt;p&gt;BTW, this presentation is written in &lt;a href=&quot;https:&#x2F;&#x2F;typst.app&#x2F;&quot;&gt;typst&lt;&#x2F;a&gt;, you can check the code in this &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;totikom&#x2F;slides&#x2F;tree&#x2F;main&#x2F;2024-06-08-computer-history&quot;&gt;repo&lt;&#x2F;a&gt; (my other talks are stored there).&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Open lecture about blockchain</title>
+        <published>2024-05-26T00:00:00+00:00</published>
+        <updated>2024-05-26T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/talks/turing-blockchain/"/>
+        <id>https://totikom.github.io/blog/talks/turing-blockchain/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/talks/turing-blockchain/">&lt;p&gt;On the 1st of May in collaboration with &quot;Turing&quot; school I gave a lecture about blockhcain internals.
+&lt;a href=&quot;&#x2F;slides&#x2F;2024-05-01-turing-blockchain.pdf&quot;&gt;slides&lt;&#x2F;a&gt; and &lt;a href=&quot;https:&#x2F;&#x2F;youtu.be&#x2F;8OB97iBm31I?si=Wv_4aLTUeiXQy0v0&quot;&gt;video&lt;&#x2F;a&gt; (in Russian).&lt;&#x2F;p&gt;
+&lt;p&gt;BTW, this presentation is written in &lt;a href=&quot;https:&#x2F;&#x2F;typst.app&#x2F;&quot;&gt;typst&lt;&#x2F;a&gt;, you can check the code in this &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;totikom&#x2F;slides&#x2F;tree&#x2F;main&#x2F;2024-05-01-turing-blockchain&quot;&gt;repo&lt;&#x2F;a&gt; (my other talks will likely be stored there).&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>I&#x27;ve started using keyoxide!</title>
+        <published>2024-05-05T00:00:00+00:00</published>
+        <updated>2024-05-05T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/maintenance/adding-keyoxide-key/"/>
+        <id>https://totikom.github.io/blog/maintenance/adding-keyoxide-key/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/maintenance/adding-keyoxide-key/">&lt;p&gt;-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512&lt;&#x2F;p&gt;
+&lt;p&gt;Hi, it&#x27;s totikom again!
+I want to experiment with Keyoxide, but I don&#x27;t want to mess with my main pgp key, so I&#x27;ve chosen to give ASP a chance.
+By signing this message I comfirm that &lt;a href=&quot;https:&#x2F;&#x2F;keyoxide.org&#x2F;aspe:keyoxide.org:N2JI63C76RTIUDK54WA7COKDLU&quot;&gt;aspe:keyoxide.org:N2JI63C76RTIUDK54WA7COKDLU&lt;&#x2F;a&gt; belongs to me.
+-----BEGIN PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;iQIzBAEBCgAdFiEEy6TRKOobT2dUcgeGWW6nDe2kr+wFAmY3nIMACgkQWW6nDe2k
+r+zRVA&#x2F;+LTPs1TWiBzp+IF1WG1cb94XFY9+oYClZHNFc3HUPBSv3prhd7J8A4YZD
+5fkdlaDIByx1lG+y02cN8TP2knt2DTm6JifGBuw&#x2F;P1gm8dQluyu3VlBmSHSXoV9X
+kUSqBz34aBsVjNuhOliqS0Ooz3tQkEIy1hCB+ktZhyd3JmoieIBHiX9NlsSLktbW
+NQiXM4C4rZFhYLSsy7F7p8JlpSbB3J9avDx04nNL9xDxUunNPnY8WniBQo88VP5h
+biCiwYphOIbuuqMiDXT91tag5YqLcZXKFEFDBySUcT&#x2F;IqVmrnc0tiLcIqvOT5m8L
+KH5wbW4pAuT+dBTcIJKA7gTMv8OHbk3cM8ml7G1n3madOsSFC4&#x2F;7cNDHiT3HE78z
+zsuJvrF&#x2F;tRVK81MN3pnDlZap4e4KOkOrVTHJxAOSUfC1ugvEf+8Hl3wmHaxVN9bf
+aUniT9ISkh34CBpJF94GQnch8r0wBkr&#x2F;EaK7dJjWnjLuwtSDQ7IB034z1vbYQNT2
+y7MPdlHVduHBKHt4y7e0Sp4cVvpgyeZpjkrY+p00uUDh92QkkGuWkv1&#x2F;u7VbpbxX
+K5xvrqa1IHQO0MivJsVcACDrBdJt2tNTu77b8p5CholOYeN87sxFlbpbuKuFGZe4
+cDS1BMigbnYUwYc45yeq8euDr+0F6EehcLXD3DjFT0zhoTl5NWg=
+=RAUE
+-----END PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;You can also check out original &lt;a href=&quot;&#x2F;2024-05-05-adding_keyoxide_key.txt&quot;&gt;message&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Installing nix the hard way</title>
+        <published>2024-04-17T00:00:00+00:00</published>
+        <updated>2024-04-17T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/nix-install/"/>
+        <id>https://totikom.github.io/blog/nix-install/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/nix-install/">&lt;h1 id=&quot;why-bother-with-all-that-staff&quot;&gt;Why bother with all that staff?&lt;&#x2F;h1&gt;
+&lt;p&gt;People talk a lot about Nix and how it helps to build reproducible environments.
+Nix community is so focused on reproducibility, that using &lt;code&gt;nix-env&lt;&#x2F;code&gt; is considered a &lt;a href=&quot;https:&#x2F;&#x2F;stop-using-nix-env.privatevoid.net&#x2F;&quot;&gt;bad&lt;&#x2F;a&gt; practice.&lt;&#x2F;p&gt;
+&lt;p&gt;However, reproducibility is not the only positive feature of &lt;code&gt;nix&lt;&#x2F;code&gt;.
+Another important feature is &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;multi-user.html&quot;&gt;multi-user mode&lt;&#x2F;a&gt;.
+This may not sound very useful for individuals, but I think, that for big companies it is a dealbreaker.&lt;&#x2F;p&gt;
+&lt;p&gt;Just think about it!
+For IT companies it is a common situation when several developers work on a single remote machine.
+For stability, and other Important Reasons™ such machines rarely have updated software.&lt;&#x2F;p&gt;
+&lt;p&gt;Either for compatibility with some production code, or because of security policies, this servers are not just outdated, but the updates are intentionally disabled.&lt;&#x2F;p&gt;
+&lt;p&gt;They may even be disconnected from the internet, allowing access only to the company&#x27;s internal network.&lt;&#x2F;p&gt;
+&lt;p&gt;Even if updates were possible, they would be very risky: updating one package may require updating its dependencies and therefore other packages which depend on them.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Partial updates are not supported.&lt;&#x2F;p&gt;
+&lt;p&gt;© ArchWiki&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Of course, package manager will resolve such conflicts and just updates everything.&lt;&#x2F;p&gt;
+&lt;p&gt;...probably breaking someone else&#x27;s environment.
+So, updates are often restricted.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;installation&quot;&gt;Installation&lt;&#x2F;h1&gt;
+&lt;p&gt;A few days ago I&#x27;ve explained this to the management and today I was finally given access to proxy, which will allow me to download things from the internet.&lt;&#x2F;p&gt;
+&lt;p&gt;First of all, I had to download the installer, as stated in the official &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;#multi-user&quot;&gt;guides&lt;&#x2F;a&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bash &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -L&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;nix&#x2F;install)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --daemon
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Of course, it didn&#x27;t work without configuring the proxy, so actually I had to do:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTP_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTPS_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bash &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -L&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;nix&#x2F;install)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --daemon
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And...
+It still hasn&#x27;t worked!
+&lt;code&gt;curl&lt;&#x2F;code&gt; failed with a cryptic error saying that &lt;code&gt;&amp;lt;my username&amp;gt;:&lt;&#x2F;code&gt; (yes, with colon) is not a valid port number.
+WTF!?&lt;&#x2F;p&gt;
+&lt;p&gt;My password has special characters.
+Maybe they were not property escaped?&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ve tried, but without success.
+After a bit of digging I&#x27;ve found that (it looks very obvious now) &lt;code&gt;HTTP_PROXY&lt;&#x2F;code&gt; variable is parsed as URL and therefore all special characters have to be &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Percent-encoding&quot;&gt;percent-encoded&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;OK... I&#x27;ve redefined proxy variables and installation script was finally downloaded.
+The script started working and have downloaded the tarball.
+I&#x27;ve entered &lt;code&gt;sudo&lt;&#x2F;code&gt; password, it successfully created users and copied files from the package to &lt;code&gt;&#x2F;nix&lt;&#x2F;code&gt; directory.
+Everything was fine until it runned &lt;code&gt;nix-channel --update nixpkgs&lt;&#x2F;code&gt;.
+Nothing happened for a while, when a connection timeout warning appeared.&lt;&#x2F;p&gt;
+&lt;p&gt;That looked suspiciously like a proxy failure.
+I&#x27;ve added &lt;code&gt;--no-channel-add&lt;&#x2F;code&gt; flag to the install script, so that it will skip this step, uninstalled everything &lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-1-1&quot;&gt;&lt;a href=&quot;#fn-1&quot;&gt;[1]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; as explained in the &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;uninstall#linux&quot;&gt;docs&lt;&#x2F;a&gt; and started from the begining.&lt;&#x2F;p&gt;
+&lt;p&gt;The installation seemed to succeed this time, so I&#x27;ve started a new shell and did:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --add&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;channels&#x2F;nixpkgs-unstable nixpkgs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But it failed because of insufficient permissions.
+Of course!
+I forgot to add my user to the right group.&lt;&#x2F;p&gt;
+&lt;p&gt;According to the &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;manual&#x2F;nix&#x2F;stable&#x2F;installation&#x2F;multi-user#restricting-access&quot;&gt;manual&lt;&#x2F;a&gt;, only users who have write permission to &lt;code&gt;&#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket&lt;&#x2F;code&gt; are allowed to work in multi-user mode.
+I&#x27;ve already had &lt;code&gt;users&lt;&#x2F;code&gt; group, so I did just:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chgrp users &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chmod ug=rwx,o= &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now my user had enough permissions and I was able to run &lt;code&gt;nix-channel&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --add&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;channels&#x2F;nixpkgs-unstable nixpkgs
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --update&lt;&#x2F;span&gt;&lt;span&gt; nixpkgs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As previously happend in the istall script, &lt;code&gt;--update &lt;&#x2F;code&gt; command hanged.
+I&#x27;ve started searching, how people deal with proxies in Nix.
+Among others, I&#x27;ve found &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;NixOS&#x2F;nix&#x2F;pull&#x2F;2946&#x2F;files&quot;&gt;this&lt;&#x2F;a&gt; PR, which explicitly add support for proxies, but, as far as I can tell, only for &lt;code&gt;nix-daemon&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ve added &lt;code&gt;HTTP_PROXY&lt;&#x2F;code&gt; and &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt; vars and tried again.
+This time I&#x27;ve got a different error: &lt;code&gt;nix-channel&lt;&#x2F;code&gt; was complaining about bad SSL cert.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;here-comes-the-funny-part&quot;&gt;Here comes the funny part...&lt;&#x2F;h1&gt;
+&lt;p&gt;Well, our machines are not only behind proxy, they are behind MITM-proxy.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;curl&lt;&#x2F;code&gt; and other installed software works fine, because they use system-wide CA bundles, but Nix comes with its own certificates.&lt;&#x2F;p&gt;
+&lt;p&gt;After some googling I&#x27;ve found &lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; variable and tried to set it.
+It worked!
+The channel was successully updated and with a feel of acomplishment I&#x27;ve issued &lt;code&gt;nix-shell -p vim&lt;&#x2F;code&gt; to try it out.&lt;&#x2F;p&gt;
+&lt;p&gt;The command was silent for almost a minute, then I saw a familiar timeout error.
+But I&#x27;ve configured the proxy vars!
+They were definetly passed to the systemd override, the installer has clearly shown it (I still had the installer output in the unclosed term).&lt;&#x2F;p&gt;
+&lt;p&gt;In a fit of suspiciousness I&#x27;ve opened override file.
+At first glance, everything seemed fine, proxy variables were set, but the password field in the URLs looked a bit strange.
+I&#x27;ve taken a closer look and found that nix installer has reencoded my percent-encoded characters and messed them up!
+I&#x27;ve also remembered the certificate thing, so I&#x27;ve also add &lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; variable to the override.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl daemon-reload
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl restart nix-daemon.service
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And finaly &lt;code&gt;nix-env -i vim&lt;&#x2F;code&gt;&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-2-1&quot;&gt;&lt;a href=&quot;#fn-2&quot;&gt;[2]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; worked!
+Initial enviroment installation was a bit slow, but it worked!
+It took me a whole working day to do this &lt;em&gt;simple&lt;&#x2F;em&gt; install...&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;tl-dr&quot;&gt;TL;DR:&lt;&#x2F;h1&gt;
+&lt;p&gt;If you need to install &lt;code&gt;nix&lt;&#x2F;code&gt;  in multi-user mode behind MITM-proxy, do the following:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTP_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;export &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;HTTPS_PROXY&lt;&#x2F;span&gt;&lt;span&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;http:&#x2F;&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;:&amp;lt;password&amp;gt;@proxy.addr:port
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bash &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -L&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;nix&#x2F;install)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --daemon
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If your username or pasword has special characters, &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Percent-encoding&quot;&gt;percent-encode&lt;&#x2F;a&gt; them.&lt;&#x2F;p&gt;
+&lt;p&gt;Open &lt;code&gt;&#x2F;etc&#x2F;systemd&#x2F;system&#x2F;nix-daemon.service.d&#x2F;override.conf&lt;&#x2F;code&gt; and check that variables &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt;, &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt; are not messed up.
+Add variable &lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; to that file and run:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl daemon-reload
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl restart nix-daemon.service
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then add &lt;code&gt;nix-socket&lt;&#x2F;code&gt; to the right group:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chgrp nix-users &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; chmod ug=rwx,o= &#x2F;nix&#x2F;var&#x2F;nix&#x2F;daemon-socket
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In a new shell set &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt;, &lt;code&gt;HTTPS_PROXY&lt;&#x2F;code&gt; and&lt;code&gt;NIX_SSL_CERT_FILE&lt;&#x2F;code&gt; variables&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-3-1&quot;&gt;&lt;a href=&quot;#fn-3&quot;&gt;[3]&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; and run:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --add&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;nixos.org&#x2F;channels&#x2F;nixpkgs-unstable nixpkgs
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nix-channel --update&lt;&#x2F;span&gt;&lt;span&gt; nixpkgs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;That&#x27;s it!
+&lt;code&gt;nix&lt;&#x2F;code&gt; is installed on your system.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;hr&gt;&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;fn-1&quot;&gt;
+&lt;p&gt;without that the script will complain about existing installation. &lt;a href=&quot;#fr-1-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li id=&quot;fn-2&quot;&gt;
+&lt;p&gt;again, I know that using &lt;code&gt;nix-env&lt;&#x2F;code&gt; is discouraged, but for my particular setup it is more suitable. &lt;a href=&quot;#fr-2-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li id=&quot;fn-3&quot;&gt;
+&lt;p&gt;you need to set this variables only for operations with &lt;code&gt;nix-channel&lt;&#x2F;code&gt;. &lt;code&gt;nix-env&lt;&#x2F;code&gt; and &lt;code&gt;nix-shell&lt;&#x2F;code&gt; works without them. &lt;a href=&quot;#fr-3-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Site ownership proof</title>
+        <published>2024-04-07T00:00:00+00:00</published>
+        <updated>2024-04-07T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://totikom.github.io/blog/maintenance/initial-signature/"/>
+        <id>https://totikom.github.io/blog/maintenance/initial-signature/</id>
+        
+        <content type="html" xml:base="https://totikom.github.io/blog/maintenance/initial-signature/">&lt;p&gt;-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512&lt;&#x2F;p&gt;
+&lt;p&gt;Hi. This is totikom and by signing this message, I confirm that &lt;a href=&quot;https:&#x2F;&#x2F;totikom.github.io&#x2F;&quot;&gt;this&lt;&#x2F;a&gt; site belongs to me.
+-----BEGIN PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;iQIzBAEBCgAdFiEEy6TRKOobT2dUcgeGWW6nDe2kr+wFAmYSp6gACgkQWW6nDe2k
+r+wruw&#x2F;&#x2F;W96N22LAYDKsmdtUacU&#x2F;BbjFoKHPExuuUfYlBMru7wacyyf0FRhKBg9M
+roeW+Xruaoq&#x2F;ZoiBLARvYzdOFm1TnymCvrhO6uXhf7Ag9wpUpdAqoy5IDphjF5eQ
+u&#x2F;h+BrQs9TvkowDf202Fnmw1TBg1BcI&#x2F;WMZk5Itn4TPLtzdplGkvVMR&#x2F;j5DOckNQ
+UJ+MchY1xZvXhGd8stIvM718SHM6ExuRJHGIiAPzwTfsUIIenn1zFXZ9NeHwFMoP
+qx&#x2F;smmiWMnhTn9WJyyeMGSPgMZUw+y1KgNDLua33+k44vz4Ts6ZJpMBJ6o9YvpWB
+x1dQZTRMy8T1Z16GFv2gDgy4PAKl526O4MArFLv&#x2F;11stUo8HUNtk70e3lJdkAPt0
+rOBtrtDu2DjPnKPakNyR552dmLBniTBccjx+OQFh89PKV723TsFBr1AuvX3RRzMU
+l7OTH7Kt5iftZCJDGc8tRfLLvwCv75lmrOopccc&#x2F;qwhjyqbhN2vecHrZADUTRCLu
+cZ+A2fIep4faPFDnFFwz5kgjz9goVOLRx&#x2F;l&#x2F;RMJLsibWzZvN6SQ1DJMHWf3N2row
+Q3qo+eXoKmsKIr8QO0ccakpYR1dbH+DyRYNUhdwbISKcUNZ4OmlA1pZprDmxdHXe
+LVNepBYKHZTgKF5kxNtrJlfWQfBmSEuU6+fgCjmLttXme1zdPA8=
+=EmDk
+-----END PGP SIGNATURE-----&lt;&#x2F;p&gt;
+&lt;p&gt;You can also check out original &lt;a href=&quot;&#x2F;2024-04-07-initial_signature.txt&quot;&gt;message&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
