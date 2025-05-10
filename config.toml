@@ -32,6 +32,7 @@ author = "Eugene Lomov"
 accent_color = "pink"
 background_color = "dark"
 logo_text = "Quantum creep"
+page_titles = "page_only"
 
 # menu is enabled by adding menu_items (optional)
 menu_items = [

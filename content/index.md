@@ -11,13 +11,15 @@ While not at work, I'm playing with different tech stuff or infodumping my knowl
 [^1]: Evgeny, Evgenii or whatever the correct transliteration is.
 
 # Contacts
+- email: `<my nick>-at-disroot-dot-org`
+
 ## Cryptography
 - PGP key fingerprint `4046 48BF A25F 991B 75CD  3752 3197 B6B3 AE53 574B`
 - PGP [key](/key.asc) (also available on [github](https://github.com/totikom.gpg))
 - Keyoxide [profile](https://keyoxide.org/aspe:keyoxide.org:N2JI63C76RTIUDK54WA7COKDLU)
 - Keybase [profile](https://keybase.io/totikom)
 
-## Social media and messegers
+## Social media and messengers
 - Fediverse: [@totikom@fosstodon.org](https://fosstodon.org/@totikom)
 - Matrix: [@totikom:matrix.org](https://matrix.to/#/@totikom:matrix.org)
 - Reddit: [u/totikom](https://www.reddit.com/user/totikom/)
