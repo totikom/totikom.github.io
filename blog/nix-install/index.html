@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Installing nix the hard way</title>
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="robots" content="noodp"/>
+
+    <link rel="stylesheet" href="https://totikom.github.io/style.css">
+    <link rel="stylesheet" href="https://totikom.github.io/color/pink.css">
+
+        <link rel="stylesheet" href="https://totikom.github.io/color/background_dark.css">
+    
+    <link rel="stylesheet" href="https://totikom.github.io/font-hack-subset.css">
+
+    <meta name="description" content="My story of installing `nix` package manager on machine behind MITM-proxy">
+
+    <meta property="og:description" content="My story of installing `nix` package manager on machine behind MITM-proxy">
+    <meta property="og:title" content="Installing nix the hard way">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://totikom.github.io/blog/nix-install/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:description" content="My story of installing `nix` package manager on machine behind MITM-proxy">
+    <meta name="twitter:title" content="Installing nix the hard way">
+    <meta property="twitter:domain" content="totikom.github.io&#x2F;">
+    <meta property="twitter:url" content="https://totikom.github.io/blog/nix-install/">
+
+                <link rel="alternate" type="application/rss+xml" title=" RSS Feed" href="https://totikom.github.io/rss.xml" />
+                <link rel="alternate" type="application/atom+xml" title=" Atom Feed" href="https://totikom.github.io/atom.xml" />
+    </head>
+
+<body class="">
+<div class="container">
+    
+    <header class="header">
+        <div class="header__inner">
+            <div class="header__logo">
+                    
+                <a href="https://totikom.github.io/" style="text-decoration: none;">
+                    <div class="logo">
+                      
+                            Quantum creep
+                        
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        
+        
+                <nav class="menu">
+            <ul class="menu__inner">
+                <li><a href="https://totikom.github.io//blog">blog</a></li>
+            
+                <li><a href="https://totikom.github.io//tags">tags</a></li>
+            
+                <li><a href="https://totikom.github.io//archive">archive</a></li>
+            
+                <li class="active"><a href="https://totikom.github.io/">about me</a></li>
+            
+                <li><a href="https://totikom.github.io//rss.xml">rss</a></li>
+            
+                <li><a href="https://totikom.github.io//atom.xml">atom</a></li>
+            </ul>
+        </nav>
+    
+    
+        
+    </header>
+    
+
+    <div class="content">
+        
+<div class="post">
+	
+    <h1 class="post-title"><a href="https://totikom.github.io/blog/nix-install/">Installing nix the hard way</a></h1>
+    <div class="post-meta-inline">
+        
+    <span class="post-date">
+            2024-04-17
+        </span>
+
+    </div>
+
+    
+        <span class="post-tags-inline">
+                :: tags:&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/nix/">#nix</a>&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/system-administration/">#system-administration</a></span>
+    
+
+	
+	<ul>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/nix-install/#why-bother-with-all-that-staff">Why bother with all that staff?</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/nix-install/#installation">Installation</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/nix-install/#here-comes-the-funny-part">Here comes the funny part...</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/nix-install/#tl-dr">TL;DR:</a>
+			
+		</li>
+		
+	</ul>
+	
+	<hr />
+	<div class="post-content">
+            <h1 id="why-bother-with-all-that-staff">Why bother with all that staff?</h1>
+<p>People talk a lot about Nix and how it helps to build reproducible environments.
+Nix community is so focused on reproducibility, that using <code>nix-env</code> is considered a <a href="https://stop-using-nix-env.privatevoid.net/">bad</a> practice.</p>
+<p>However, reproducibility is not the only positive feature of <code>nix</code>.
+Another important feature is <a href="https://nixos.org/manual/nix/stable/installation/multi-user.html">multi-user mode</a>.
+This may not sound very useful for individuals, but I think, that for big companies it is a dealbreaker.</p>
+<p>Just think about it!
+For IT companies it is a common situation when several developers work on a single remote machine.
+For stability, and other Important Reasons™ such machines rarely have updated software.</p>
+<p>Either for compatibility with some production code, or because of security policies, this servers are not just outdated, but the updates are intentionally disabled.</p>
+<p>They may even be disconnected from the internet, allowing access only to the company's internal network.</p>
+<p>Even if updates were possible, they would be very risky: updating one package may require updating its dependencies and therefore other packages which depend on them.</p>
+<blockquote>
+<p>Partial updates are not supported.</p>
+<p>© ArchWiki</p>
+</blockquote>
+<p>Of course, package manager will resolve such conflicts and just updates everything.</p>
+<p>...probably breaking someone else's environment.
+So, updates are often restricted.</p>
+<h1 id="installation">Installation</h1>
+<p>A few days ago I've explained this to the management and today I was finally given access to proxy, which will allow me to download things from the internet.</p>
+<p>First of all, I had to download the installer, as stated in the official <a href="https://nixos.org/manual/nix/stable/installation/#multi-user">guides</a>:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">bash </span><span>&lt;(</span><span style="color:#bf616a;">curl -L</span><span> https://nixos.org/nix/install)</span><span style="color:#bf616a;"> --daemon
+</span></code></pre>
+<p>Of course, it didn't work without configuring the proxy, so actually I had to do:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#b48ead;">export </span><span style="color:#bf616a;">HTTP_PROXY</span><span>=</span><span style="color:#a3be8c;">http://</span><span>&lt;username&gt;:&lt;password&gt;@proxy.addr:port
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">HTTPS_PROXY</span><span>=</span><span style="color:#a3be8c;">http://</span><span>&lt;username&gt;:&lt;password&gt;@proxy.addr:port
+</span><span style="color:#bf616a;">bash </span><span>&lt;(</span><span style="color:#bf616a;">curl -L</span><span> https://nixos.org/nix/install)</span><span style="color:#bf616a;"> --daemon
+</span></code></pre>
+<p>And...
+It still hasn't worked!
+<code>curl</code> failed with a cryptic error saying that <code>&lt;my username&gt;:</code> (yes, with colon) is not a valid port number.
+WTF!?</p>
+<p>My password has special characters.
+Maybe they were not property escaped?</p>
+<p>I've tried, but without success.
+After a bit of digging I've found that (it looks very obvious now) <code>HTTP_PROXY</code> variable is parsed as URL and therefore all special characters have to be <a href="https://en.wikipedia.org/wiki/Percent-encoding">percent-encoded</a>.</p>
+<p>OK... I've redefined proxy variables and installation script was finally downloaded.
+The script started working and have downloaded the tarball.
+I've entered <code>sudo</code> password, it successfully created users and copied files from the package to <code>/nix</code> directory.
+Everything was fine until it runned <code>nix-channel --update nixpkgs</code>.
+Nothing happened for a while, when a connection timeout warning appeared.</p>
+<p>That looked suspiciously like a proxy failure.
+I've added <code>--no-channel-add</code> flag to the install script, so that it will skip this step, uninstalled everything <sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup> as explained in the <a href="https://nixos.org/manual/nix/stable/installation/uninstall#linux">docs</a> and started from the begining.</p>
+<p>The installation seemed to succeed this time, so I've started a new shell and did:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">nix-channel --add</span><span> https://nixos.org/channels/nixpkgs-unstable nixpkgs
+</span></code></pre>
+<p>But it failed because of insufficient permissions.
+Of course!
+I forgot to add my user to the right group.</p>
+<p>According to the <a href="https://nixos.org/manual/nix/stable/installation/multi-user#restricting-access">manual</a>, only users who have write permission to <code>/nix/var/nix/daemon-socket</code> are allowed to work in multi-user mode.
+I've already had <code>users</code> group, so I did just:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">sudo</span><span> chgrp users /nix/var/nix/daemon-socket
+</span><span style="color:#bf616a;">sudo</span><span> chmod ug=rwx,o= /nix/var/nix/daemon-socket
+</span></code></pre>
+<p>Now my user had enough permissions and I was able to run <code>nix-channel</code>:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">nix-channel --add</span><span> https://nixos.org/channels/nixpkgs-unstable nixpkgs
+</span><span style="color:#bf616a;">nix-channel --update</span><span> nixpkgs
+</span></code></pre>
+<p>As previously happend in the istall script, <code>--update </code> command hanged.
+I've started searching, how people deal with proxies in Nix.
+Among others, I've found <a href="https://github.com/NixOS/nix/pull/2946/files">this</a> PR, which explicitly add support for proxies, but, as far as I can tell, only for <code>nix-daemon</code>.</p>
+<p>I've added <code>HTTP_PROXY</code> and <code>HTTPS_PROXY</code> vars and tried again.
+This time I've got a different error: <code>nix-channel</code> was complaining about bad SSL cert.</p>
+<h1 id="here-comes-the-funny-part">Here comes the funny part...</h1>
+<p>Well, our machines are not only behind proxy, they are behind MITM-proxy.</p>
+<p><code>curl</code> and other installed software works fine, because they use system-wide CA bundles, but Nix comes with its own certificates.</p>
+<p>After some googling I've found <code>NIX_SSL_CERT_FILE</code> variable and tried to set it.
+It worked!
+The channel was successully updated and with a feel of acomplishment I've issued <code>nix-shell -p vim</code> to try it out.</p>
+<p>The command was silent for almost a minute, then I saw a familiar timeout error.
+But I've configured the proxy vars!
+They were definetly passed to the systemd override, the installer has clearly shown it (I still had the installer output in the unclosed term).</p>
+<p>In a fit of suspiciousness I've opened override file.
+At first glance, everything seemed fine, proxy variables were set, but the password field in the URLs looked a bit strange.
+I've taken a closer look and found that nix installer has reencoded my percent-encoded characters and messed them up!
+I've also remembered the certificate thing, so I've also add <code>NIX_SSL_CERT_FILE</code> variable to the override.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">sudo</span><span> systemctl daemon-reload
+</span><span style="color:#bf616a;">sudo</span><span> systemctl restart nix-daemon.service
+</span></code></pre>
+<p>And finaly <code>nix-env -i vim</code><sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">[2]</a></sup> worked!
+Initial enviroment installation was a bit slow, but it worked!
+It took me a whole working day to do this <em>simple</em> install...</p>
+<h1 id="tl-dr">TL;DR:</h1>
+<p>If you need to install <code>nix</code>  in multi-user mode behind MITM-proxy, do the following:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#b48ead;">export </span><span style="color:#bf616a;">HTTP_PROXY</span><span>=</span><span style="color:#a3be8c;">http://</span><span>&lt;username&gt;:&lt;password&gt;@proxy.addr:port
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">HTTPS_PROXY</span><span>=</span><span style="color:#a3be8c;">http://</span><span>&lt;username&gt;:&lt;password&gt;@proxy.addr:port
+</span><span style="color:#bf616a;">bash </span><span>&lt;(</span><span style="color:#bf616a;">curl -L</span><span> https://nixos.org/nix/install)</span><span style="color:#bf616a;"> --daemon
+</span></code></pre>
+<p>If your username or pasword has special characters, <a href="https://en.wikipedia.org/wiki/Percent-encoding">percent-encode</a> them.</p>
+<p>Open <code>/etc/systemd/system/nix-daemon.service.d/override.conf</code> and check that variables <code>HTTPS_PROXY</code>, <code>HTTPS_PROXY</code> are not messed up.
+Add variable <code>NIX_SSL_CERT_FILE</code> to that file and run:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">sudo</span><span> systemctl daemon-reload
+</span><span style="color:#bf616a;">sudo</span><span> systemctl restart nix-daemon.service
+</span></code></pre>
+<p>Then add <code>nix-socket</code> to the right group:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">sudo</span><span> chgrp nix-users /nix/var/nix/daemon-socket
+</span><span style="color:#bf616a;">sudo</span><span> chmod ug=rwx,o= /nix/var/nix/daemon-socket
+</span></code></pre>
+<p>In a new shell set <code>HTTPS_PROXY</code>, <code>HTTPS_PROXY</code> and<code>NIX_SSL_CERT_FILE</code> variables<sup class="footnote-reference" id="fr-3-1"><a href="#fn-3">[3]</a></sup> and run:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">nix-channel --add</span><span> https://nixos.org/channels/nixpkgs-unstable nixpkgs
+</span><span style="color:#bf616a;">nix-channel --update</span><span> nixpkgs
+</span></code></pre>
+<p>That's it!
+<code>nix</code> is installed on your system.</p>
+<hr />
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>without that the script will complain about existing installation. <a href="#fr-1-1">↩</a></p>
+</li>
+<li id="fn-2">
+<p>again, I know that using <code>nix-env</code> is discouraged, but for my particular setup it is more suitable. <a href="#fr-2-1">↩</a></p>
+</li>
+<li id="fn-3">
+<p>you need to set this variables only for operations with <code>nix-channel</code>. <code>nix-env</code> and <code>nix-shell</code> works without them. <a href="#fr-3-1">↩</a></p>
+</li>
+</ol>
+
+        </div>
+
+
+	
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h">Thanks for reading! Read other posts?</span>
+                    <hr />
+                </div>
+                <div class="pagination__buttons">
+                        <span class="button previous">
+                            <a href="https://totikom.github.io/blog/maintenance/initial-signature/">
+                                <span class="button__icon">←</span>&nbsp;
+                                <span class="button__text">Site ownership proof</span>
+                            </a>
+                        </span>
+                    
+                    
+                        <span class="button next">
+                            <a href="https://totikom.github.io/blog/maintenance/adding-keyoxide-key/">
+                                <span class="button__text">I&#x27;ve started using keyoxide!</span>&nbsp;
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    </div>
+            </div>
+        
+</div>
+
+    </div>
+
+    
+    <footer class="footer">
+        <div class="footer__inner">
+                <div class="copyright">
+                        <span>© 
+    2025
+ Eugene Lomov</span>
+                    <span class="copyright-theme">
+                        <span class="copyright-theme-sep">:: </span>
+                        Theme: <a href="https://github.com/pawroman/zola-theme-terminimal/">Terminimal</a> by pawroman
+                    </span>
+                </div>
+            </div>
+    </footer>
+    
+
+</div>
+    <!-- Tracking via https://www.goatcounter.com/ -->
+    <script data-goatcounter="https://totikom.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+
+</html>

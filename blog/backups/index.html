@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Backups made easy: btrfs + snapper + snapborg</title>
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="robots" content="noodp"/>
+
+    <link rel="stylesheet" href="https://totikom.github.io/style.css">
+    <link rel="stylesheet" href="https://totikom.github.io/color/pink.css">
+
+        <link rel="stylesheet" href="https://totikom.github.io/color/background_dark.css">
+    
+    <link rel="stylesheet" href="https://totikom.github.io/font-hack-subset.css">
+
+    <meta name="description" content="Combining btrfs with borg creates a very robust and easy to use backup system with nice extra features.">
+
+    <meta property="og:description" content="Combining btrfs with borg creates a very robust and easy to use backup system with nice extra features.">
+    <meta property="og:title" content="Backups made easy: btrfs + snapper + snapborg">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://totikom.github.io/blog/backups/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:description" content="Combining btrfs with borg creates a very robust and easy to use backup system with nice extra features.">
+    <meta name="twitter:title" content="Backups made easy: btrfs + snapper + snapborg">
+    <meta property="twitter:domain" content="totikom.github.io&#x2F;">
+    <meta property="twitter:url" content="https://totikom.github.io/blog/backups/">
+
+                <link rel="alternate" type="application/rss+xml" title=" RSS Feed" href="https://totikom.github.io/rss.xml" />
+                <link rel="alternate" type="application/atom+xml" title=" Atom Feed" href="https://totikom.github.io/atom.xml" />
+    </head>
+
+<body class="">
+<div class="container">
+    
+    <header class="header">
+        <div class="header__inner">
+            <div class="header__logo">
+                    
+                <a href="https://totikom.github.io/" style="text-decoration: none;">
+                    <div class="logo">
+                      
+                            Quantum creep
+                        
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        
+        
+                <nav class="menu">
+            <ul class="menu__inner">
+                <li><a href="https://totikom.github.io//blog">blog</a></li>
+            
+                <li><a href="https://totikom.github.io//tags">tags</a></li>
+            
+                <li><a href="https://totikom.github.io//archive">archive</a></li>
+            
+                <li class="active"><a href="https://totikom.github.io/">about me</a></li>
+            
+                <li><a href="https://totikom.github.io//rss.xml">rss</a></li>
+            
+                <li><a href="https://totikom.github.io//atom.xml">atom</a></li>
+            </ul>
+        </nav>
+    
+    
+        
+    </header>
+    
+
+    <div class="content">
+        
+<div class="post">
+	
+    <h1 class="post-title"><a href="https://totikom.github.io/blog/backups/">Backups made easy: btrfs + snapper + snapborg</a></h1>
+    <div class="post-meta-inline">
+        
+    <span class="post-date">
+            2025-03-29
+        </span>
+
+    </div>
+
+    
+        <span class="post-tags-inline">
+                :: tags:&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/backups/">#backups</a>&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/system-administration/">#system-administration</a></span>
+    
+
+	
+	<ul>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/backups/#system-installation-and-subvolume-layout">System installation and subvolume layout</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/backups/#snapper">snapper</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/backups/#borg">borg</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/backups/#snapborg">snapborg</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/backups/#final-workflow">Final workflow</a>
+			
+		</li>
+		
+	</ul>
+	
+	<hr />
+	<div class="post-content">
+            <p>Almost half a year ago I've switched from Manjaro to ArchLinux. One of the triggers for that switch was an urge to try CoW file system, mainly <a href="https://wiki.archlinux.org/title/Btrfs">btrfs</a>.</p>
+<h1 id="system-installation-and-subvolume-layout">System installation and subvolume layout</h1>
+<p>Basically, I've followed this <a href="https://walian.co.uk/arch-install-with-secure-boot-btrfs-tpm2-luks-encryption-unified-kernel-images.html">tutorial</a>:</p>
+<ul>
+<li>Created 2GB FAT partition for EFI</li>
+<li>Encrypted the rest of my disk with <code>cryptsetup</code></li>
+<li>Formatted it to <code>btrfs</code></li>
+<li>Created a set of subvolumes, mainly:
+<ul>
+<li><code>@</code> for rootfs</li>
+<li><code>@home</code> for home folders</li>
+<li><code>@home_unbacked</code> user files, which won't be backed up (more about it later)</li>
+<li><code>@var</code> for <code>/var</code></li>
+<li><code>@var_log</code> for logs</li>
+<li><code>@var_pkgs</code> for <code>pacman</code> cache</li>
+</ul>
+</li>
+</ul>
+<p>This massive number of subvolumes is needed to allow fine-grained backups without wasting space for unneeded data.</p>
+<p>For instance,  you most likely won't need a backup of <code>pacman</code> cache, as you can download old versions of the packages form official archives, however you most likely need a backup of your <code>/bin/</code>,<code>/lib/</code>, <code>/usr/</code> and <code>/etc/</code> folders, because they contain files, essential for your system operation.</p>
+<p>The separation of <code>/</code> and <code>/home/</code> backups is necessary, because they could have different retention policies.</p>
+<p><code>@home_unbacked</code> subvolume is mounted to <code>/home/.unbacked_files/</code> directory, where each user have its own subdirectory.
+They can symlink to this folder those files, which they don't need to back up.
+For instance, my <code>~/Videos/</code> , <code>~/Music/</code> and <code>~/.cache</code> folders are symlinked to <code>.unbacked_files</code>, so they will not waste space on the backup drive.</p>
+<h1 id="snapper">snapper</h1>
+<p>Of course, you can do snapshots manually with <code>btrfs subvolume snapshot &lt;subvolume&gt; &lt;destination path&gt;</code>, be it is very verbose.</p>
+<p><code>snapper</code> is a small program for automating this task.
+Basically, it manages 2 things:</p>
+<ul>
+<li>Automatic snapshot creation: time-based and as a pacman hook</li>
+<li>Automatic removal of old snapshot based on different retention policies</li>
+</ul>
+<p>My  <code>snapper</code> config looks like this:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># subvolume to snapshot
+</span><span style="color:#bf616a;">SUBVOLUME</span><span>=&quot;</span><span style="color:#a3be8c;">/</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># filesystem type
+</span><span style="color:#bf616a;">FSTYPE</span><span>=&quot;</span><span style="color:#a3be8c;">btrfs</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># fraction or absolute size of the filesystems space the snapshots may use
+</span><span style="color:#bf616a;">SPACE_LIMIT</span><span>=&quot;</span><span style="color:#a3be8c;">0.5</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># fraction or absolute size of the filesystems space that should be free
+</span><span style="color:#bf616a;">FREE_LIMIT</span><span>=&quot;</span><span style="color:#a3be8c;">0.2</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># create hourly snapshots
+</span><span style="color:#bf616a;">TIMELINE_CREATE</span><span>=&quot;</span><span style="color:#a3be8c;">yes</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># cleanup hourly snapshots after some time
+</span><span style="color:#bf616a;">TIMELINE_CLEANUP</span><span>=&quot;</span><span style="color:#a3be8c;">yes</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># limits for timeline cleanup
+</span><span style="color:#bf616a;">TIMELINE_MIN_AGE</span><span>=&quot;</span><span style="color:#a3be8c;">1800</span><span>&quot;
+</span><span style="color:#bf616a;">TIMELINE_LIMIT_HOURLY</span><span>=&quot;</span><span style="color:#a3be8c;">1</span><span>&quot;
+</span><span style="color:#bf616a;">TIMELINE_LIMIT_DAILY</span><span>=&quot;</span><span style="color:#a3be8c;">7</span><span>&quot;
+</span><span style="color:#bf616a;">TIMELINE_LIMIT_WEEKLY</span><span>=&quot;</span><span style="color:#a3be8c;">8</span><span>&quot;
+</span><span style="color:#bf616a;">TIMELINE_LIMIT_MONTHLY</span><span>=&quot;</span><span style="color:#a3be8c;">4</span><span>&quot;
+</span><span style="color:#bf616a;">TIMELINE_LIMIT_YEARLY</span><span>=&quot;</span><span style="color:#a3be8c;">0</span><span>&quot;
+</span></code></pre>
+<p>With this config you'll have a hourly snapshots and a sane retention policy.</p>
+<p>However, <strong>snapshots are not backups</strong>.
+They'll save you from accidental file deletion or system misconfiguration, but not from disk failure.</p>
+<p>To truly have a backup, you'll need a separate drive, which stores you snapshots.</p>
+<p>Luckily, <code>btrfs</code> allows you to send subvolumes (or snapshots) to different devices.</p>
+<p>With <code>btrfs send</code> you can copy the entire subvolume to <code>stdout</code> and receive it with <code>btrfs receive</code> on the backup drive.</p>
+<p>So, with another (ideally, offline) <code>btrfs</code> disk your snapshots will be backed up and deduplicated thanks to copy-on-write semantics.</p>
+<p>However, this approach has several downsides:</p>
+<ol>
+<li>Backup drive <strong>must</strong> be formatted as <code>btrfs</code></li>
+<li>Snapshots have to be moved manually</li>
+<li>Storing backups of several subvolumes will be a mess</li>
+<li>You'll have to manually remove old snapshots</li>
+</ol>
+<h1 id="borg">borg</h1>
+<p>I'm using <a href="https://borgbackup.readthedocs.io/en/stable/">borg</a> as my main backup utility for several years already.
+It has all the backing up features I have ever needed:</p>
+<ul>
+<li>block-level deduplication</li>
+<li>backup compression</li>
+<li>does not depend on the file system: <code>borg</code> archive is just a folder with files, no hardlinks, symlinks of other special features</li>
+<li>has rich retention policy settings</li>
+<li>possibility to mount backups as FUSE file systems</li>
+</ul>
+<p>Before I've moved to <code>btrfs</code>, I've used <code>borg</code> to backup my entire system drive like this:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;">#!/bin/bash
+</span><span style="color:#bf616a;">TARGET</span><span>=</span><span style="color:#a3be8c;">/path/to/borg/archive
+</span><span style="color:#bf616a;">BACKUPS</span><span>= </span><span style="color:#bf616a;">dirs</span><span> to be backed up
+</span><span style="color:#bf616a;">BORG_PASSPHRASE</span><span>=&lt;passphrase&gt;
+</span><span style="color:#bf616a;">borg</span><span> create</span><span style="color:#bf616a;"> --stats --progress </span><span>\
+</span><span>	$</span><span style="color:#bf616a;">TARGET</span><span>::{now} \
+</span><span>	$</span><span style="color:#bf616a;">BACKUPS </span><span>\
+</span><span style="color:#bf616a;">	--exclude-from</span><span> /path/to/exclusions/file
+</span></code></pre>
+<p>And it was very convenient: I've added this script to <code>cron</code> and it did everything automatically.</p>
+<p>Occasionally, I've run <code>borg prune -v --list --stats $PRUNE_OPTS $TARGET</code> to delete old backups.
+In this command <code>PRUNE_OPTS</code> is a variable, which contained retention policies.
+In my case they were:</p>
+<ul>
+<li><code>-d 1</code> keep a single backup for the last day</li>
+<li><code>-w 8</code> keep a single backup for each of the last 8 weeks</li>
+<li><code>-m 6</code> keep a single backup for each of the last 6 months</li>
+<li><code>-y 5</code> keep a single backup for each of the last 5 years</li>
+</ul>
+<p>For general file systems it is already a very good solution, but with <code>btrfs</code> we can do better:</p>
+<h1 id="snapborg">snapborg</h1>
+<p>Actually, <code>borg</code> can backup not only directories, but also the entire block devices and even <code>stdin</code><sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup>.</p>
+<p>This means that at least we can pipe <code>btrfs send</code> to <code>borg</code>, but this way we will not be able to mount subvolumes.</p>
+<p>Luckily, we can instruct  <code>borg</code>  to backup snapshot volumes discarding path to subvolumes, so from the <code>borg</code>'s point of view, snapshots are different states of a single file system instead of different subfolders.</p>
+<p>And this is already implemented in <a href="https://github.com/enzingerm/snapborg">snapborg</a>!</p>
+<p>More over, it is implemented in a fail-safe way: before starting back up <code>snapborg</code> disables retention policies on snapshots to be backed up, so they will not be removed during backup process.
+After backing everything up it will return retention policies back to the previous values.</p>
+<p>My <code>snapborg</code> config looks like this (it is slightly edited example config <code>snapborg</code> repo):</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># snapborg sample configuration file. Default values are used for the sample
+</span><span style="color:#65737e;"># configuration, thus can be omitted or changed
+</span><span>
+</span><span>
+</span><span style="color:#65737e;"># List of mappings of snapper configs to their borg repos
+</span><span style="color:#bf616a;">configs</span><span>:
+</span><span>    </span><span style="color:#65737e;"># MANDATORY: name of the snapper config
+</span><span>  - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">root
+</span><span>    </span><span style="color:#65737e;"># MANDATORY: borg repo target, e. g. backupuser@backuphost:reponame
+</span><span>    </span><span style="color:#bf616a;">repo</span><span>: </span><span style="color:#a3be8c;">/path/to/borg/repo
+</span><span>    </span><span style="color:#65737e;"># if this is set to true, borg does not neccessarily fail when a backup fails
+</span><span>    </span><span style="color:#bf616a;">fault_tolerant_mode</span><span>: </span><span style="color:#d08770;">false
+</span><span>    </span><span style="color:#65737e;"># snapborg fails when the most recent snapshot transferred successfully is
+</span><span>    </span><span style="color:#65737e;"># older than the time period given here. Set to &#39;0d&#39; to disable this behaviour
+</span><span>    </span><span style="color:#bf616a;">last_backup_max_age</span><span>: </span><span style="color:#a3be8c;">0d
+</span><span>    </span><span style="color:#65737e;"># archive creation/storage options
+</span><span>    </span><span style="color:#bf616a;">storage</span><span>:
+</span><span>      </span><span style="color:#65737e;"># use either none or repokey encryption, defaults to none
+</span><span>      </span><span style="color:#bf616a;">encryption</span><span>: </span><span style="color:#a3be8c;">repokey
+</span><span>      </span><span style="color:#65737e;"># MANDATORY when using repokey: literal key passphrase or path to file
+</span><span>      </span><span style="color:#65737e;"># containing the key passphrase. Ignored when using none encryption
+</span><span>      </span><span style="color:#bf616a;">encryption_passphrase</span><span>: </span><span style="color:#a3be8c;">&lt;my borg passphrase&gt;
+</span><span>      </span><span style="color:#65737e;"># compression configuration, see borg manual
+</span><span>      </span><span style="color:#bf616a;">compression</span><span>: </span><span style="color:#a3be8c;">auto,zstd,4
+</span><span>
+</span><span>    </span><span style="color:#65737e;"># define retention settings for borg independently from snapper
+</span><span>    </span><span style="color:#bf616a;">retention</span><span>:
+</span><span>      </span><span style="color:#bf616a;">keep_last</span><span>: </span><span style="color:#d08770;">1
+</span><span>      </span><span style="color:#bf616a;">keep_hourly</span><span>: </span><span style="color:#d08770;">0
+</span><span>      </span><span style="color:#bf616a;">keep_daily</span><span>: </span><span style="color:#d08770;">1
+</span><span>      </span><span style="color:#bf616a;">keep_weekly</span><span>: </span><span style="color:#d08770;">8
+</span><span>      </span><span style="color:#bf616a;">keep_monthly</span><span>: </span><span style="color:#d08770;">6
+</span><span>      </span><span style="color:#bf616a;">keep_yearly</span><span>: </span><span style="color:#d08770;">5
+</span><span>    </span><span style="color:#65737e;"># exclude patterns (see borg help patterns)
+</span><span>    </span><span style="color:#bf616a;">exclude_patterns</span><span>: []
+</span></code></pre>
+<p>Whey you run <code>snapborg backup</code>, it will get a list of local snapshots, merge it with the list of backups from <code>borg</code> archive and determine, which snapshots actually  need to be backed up (i.e. will not be immediately deleted by retention policy).
+It will disable retention policy for this snapshots and back up them to <code>borg</code>.</p>
+<p>When the snapshots are backed up to <code>borg</code> archive, <code>snapborg</code> will run <code>borg prune</code> with the retention policy from the config, removing backups, which are no longer needed.</p>
+<h1 id="final-workflow">Final workflow</h1>
+<p>With <code>btrfs</code>, <code>snapper</code> and <code>snapborg</code> I have a very easy to use backup system:</p>
+<ul>
+<li><code>snapper</code> automatically<sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">[2]</a></sup> create <code>btrfs</code> snapshots and take care of removing the old ones</li>
+<li>occasionally I connect my backup hard drive to the laptop and run <code>snapborg backup</code>, so that the snapshots are backed up.</li>
+</ul>
+<p>... and that's it!
+That's all the things, which I need to do, to maintain my backup chores.</p>
+<p>Thanks to snapshots, I do not need to worry about the moment, when I need to back them up.
+If I update some file, the previous version will still be in the snapshots, so it will still be backed up, even if the changes were made <em>before</em> actual backup.</p>
+<p>For me, it is a killer-feature and I am very proud, that I've came up with this setup.</p>
+<hr />
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>you can pipe some data to it and it will be stored as <code>stdin</code> file in the <code>borg</code> archive <a href="#fr-1-1">↩</a></p>
+</li>
+<li id="fn-2">
+<p>via <code>systemd</code>  service <a href="#fr-2-1">↩</a></p>
+</li>
+</ol>
+
+        </div>
+
+
+	
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h">Thanks for reading! Read other posts?</span>
+                    <hr />
+                </div>
+                <div class="pagination__buttons">
+                        <span class="button previous">
+                            <a href="https://totikom.github.io/blog/beets-syncthing/">
+                                <span class="button__icon">←</span>&nbsp;
+                                <span class="button__text">Managing multi-device music library via beets and Syncthing</span>
+                            </a>
+                        </span>
+                    
+                    
+                        <span class="button next">
+                            <a href="https://totikom.github.io/blog/maintenance/update-subkeys/">
+                                <span class="button__text">Update PGP subkeys</span>&nbsp;
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    </div>
+            </div>
+        
+</div>
+
+    </div>
+
+    
+    <footer class="footer">
+        <div class="footer__inner">
+                <div class="copyright">
+                        <span>© 
+    2025
+ Eugene Lomov</span>
+                    <span class="copyright-theme">
+                        <span class="copyright-theme-sep">:: </span>
+                        Theme: <a href="https://github.com/pawroman/zola-theme-terminimal/">Terminimal</a> by pawroman
+                    </span>
+                </div>
+            </div>
+    </footer>
+    
+
+</div>
+    <!-- Tracking via https://www.goatcounter.com/ -->
+    <script data-goatcounter="https://totikom.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+
+</html>

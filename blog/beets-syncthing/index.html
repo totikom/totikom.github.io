@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Managing multi-device music library via beets and Syncthing</title>
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="robots" content="noodp"/>
+
+    <link rel="stylesheet" href="https://totikom.github.io/style.css">
+    <link rel="stylesheet" href="https://totikom.github.io/color/pink.css">
+
+        <link rel="stylesheet" href="https://totikom.github.io/color/background_dark.css">
+    
+    <link rel="stylesheet" href="https://totikom.github.io/font-hack-subset.css">
+
+    <meta name="description" content="">
+
+    <meta property="og:description" content="">
+    <meta property="og:title" content="Managing multi-device music library via beets and Syncthing">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://totikom.github.io/blog/beets-syncthing/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:title" content="Managing multi-device music library via beets and Syncthing">
+    <meta property="twitter:domain" content="totikom.github.io&#x2F;">
+    <meta property="twitter:url" content="https://totikom.github.io/blog/beets-syncthing/">
+
+                <link rel="alternate" type="application/rss+xml" title=" RSS Feed" href="https://totikom.github.io/rss.xml" />
+                <link rel="alternate" type="application/atom+xml" title=" Atom Feed" href="https://totikom.github.io/atom.xml" />
+    </head>
+
+<body class="">
+<div class="container">
+    
+    <header class="header">
+        <div class="header__inner">
+            <div class="header__logo">
+                    
+                <a href="https://totikom.github.io/" style="text-decoration: none;">
+                    <div class="logo">
+                      
+                            Quantum creep
+                        
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        
+        
+                <nav class="menu">
+            <ul class="menu__inner">
+                <li><a href="https://totikom.github.io//blog">blog</a></li>
+            
+                <li><a href="https://totikom.github.io//tags">tags</a></li>
+            
+                <li><a href="https://totikom.github.io//archive">archive</a></li>
+            
+                <li class="active"><a href="https://totikom.github.io/">about me</a></li>
+            
+                <li><a href="https://totikom.github.io//rss.xml">rss</a></li>
+            
+                <li><a href="https://totikom.github.io//atom.xml">atom</a></li>
+            </ul>
+        </nav>
+    
+    
+        
+    </header>
+    
+
+    <div class="content">
+        
+<div class="post">
+	
+    <h1 class="post-title"><a href="https://totikom.github.io/blog/beets-syncthing/">Managing multi-device music library via beets and Syncthing</a></h1>
+    <div class="post-meta-inline">
+        
+    <span class="post-date">
+            2025-03-06
+        </span>
+
+    </div>
+
+    
+        <span class="post-tags-inline">
+                :: tags:&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/beets/">#beets</a>&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/music/">#music</a>&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/syncthing/">#syncthing</a>&nbsp;
+                <a class="post-tag" href="https://totikom.github.io/tags/system-administration/">#system-administration</a></span>
+    
+
+	
+	<ul>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/beets-syncthing/#beets">beets</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/beets-syncthing/#syncthing-to-the-rescue">Syncthing to the rescue!</a>
+			
+		</li>
+		
+		<li>
+			<a href="https://totikom.github.io/blog/beets-syncthing/#final-setup">Final setup</a>
+			
+		</li>
+		
+	</ul>
+	
+	<hr />
+	<div class="post-content">
+            <p>I'm one of those people, who don't use streaming services and store all music on my devices.</p>
+<p>At first, I was just downloading it and occasionally copied it from one device to another.
+However, this approach does not scale well.
+Music folders on my devices had quickly became a mess: irregular names, album folders mixed with artist folders, different timestamps on different devices.</p>
+<p>At some point I've found myself downloading the same album three times: first two on different devices, because I've forgot to copy from one to another, and the third one on the phone with this album already available!
+Just because of unintuitive folder name I was unable to locate it.</p>
+<h1 id="beets">beets</h1>
+<p>To solve it on PC I've started using <a href="https://beets.io/">beets</a>.
+<code>beets</code> is a nice music management software, which allows you (among lots of otsystema) to move your music to neatly organized folder and correct songs metadata with <a href="https://musicbrainz.org/">Musicbrainz</a> database.</p>
+<p>It took me several days to import my whole PC collection to <code>beets</code> DB, but, luckly, most of the process was automatic<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup>.
+All I had to do was just:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">beet</span><span> import</span><span style="color:#bf616a;"> -q </span><span style="color:#b48ead;">[</span><span>path to music to be imported</span><span style="color:#b48ead;">]
+</span></code></pre>
+<p>Where <code>-q</code> flag means "skip mismatches and continue without user interaction".</p>
+<p>After that I've runned <code>beets</code> once again, but without <code>-q</code>  and manually confirmed all uncertainties.</p>
+<p>OK, the biggest part of my music collection got systematized.
+However, it created another problem: during the time collections on the PC and on the phone inevitabily became out of sync.
+The divergence wasn't supposed to be significant, but I couldn't just delete all music from the phone and reupload systematized collection from PC.</p>
+<p>So, I had to manually replace parts of my collection on the phone adding out of sync albums back to the PC.</p>
+<p>I guess, it took me a week or longer and it was VERY tiresome.</p>
+<p>Now, when I get new music, I immediately pass it through <code>beets</code>, so my collection remains systematized.</p>
+<p>Seems like all the problems are finally solved?
+Ehhh, not exactly.</p>
+<p>Over time my listening habits have changed and now I'm listening music almost exclusively from my phone.</p>
+<p>More over, I'm <em>getting</em> music on my phone, so the above "workflow" transforms to:</p>
+<ol>
+<li>Get new music on the phone</li>
+<li>Eventually copy it to the PC</li>
+<li>Add the new music to <code>beets</code> library</li>
+<li>Copy library entries back to the phone</li>
+</ol>
+<p>Not very convenient, right?
+That has led to me procrastinating music sync for weeks, which complicated everything, because all music players store tracks in playlists by referencing paths, so moving tracks around cause playlists to break.</p>
+<p>And I had to plug my phone via USB and wait for all the operations to finish!</p>
+<h1 id="syncthing-to-the-rescue">Syncthing to the rescue!</h1>
+<p>I knew about <a href="https://syncthing.net/">syncthing</a> for some time, but hadn't found a use for it until resently.</p>
+<p><code>Syncthing</code> is not a cloud, but rather <em>device-to-device</em> synchronization program, which may be not the best variant, if you don't have a continuously operating machine, which will serve as "cloud storage", but for keeping files in sync between devices it is a perfect fit.</p>
+<p>After setting up <code>syncthing</code> on both the PC and the phone, I got (almost) perfect setup for music collection storage and listening:</p>
+<ul>
+<li>The collection is synchronized between devices without manual actions</li>
+<li>No need to connect anything</li>
+<li>I can get music on any device</li>
+<li>I can add music to <code>beets</code> library at any time I'm near PC: the changes will be synchronized automatically</li>
+</ul>
+<h1 id="final-setup">Final setup</h1>
+<ol>
+<li><code>syncthing</code> is running on both PC and phone</li>
+<li><code>beets</code> is used on the PC to keep collection organized</li>
+<li>Any device could be used for downloading music</li>
+</ol>
+<p>This simple workflow had allowed me to greatly simplify my music collection management and usage.
+Looking back, this workflow looks like pretty obvious, but I hope that it still can help people, who maintains their music library by their own.</p>
+<hr />
+<hr><ol class="footnotes-list">
+<li id="fn-1">
+<p>If <code>beets</code> finds a matching album, it imports music automatically, but if match is not close enough, it will ask for user confirmation. <a href="#fr-1-1">↩</a></p>
+</li>
+</ol>
+
+        </div>
+
+
+	
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h">Thanks for reading! Read other posts?</span>
+                    <hr />
+                </div>
+                <div class="pagination__buttons">
+                        <span class="button previous">
+                            <a href="https://totikom.github.io/blog/talks/computer-history/">
+                                <span class="button__icon">←</span>&nbsp;
+                                <span class="button__text">Open lecture about history of computing machinery</span>
+                            </a>
+                        </span>
+                    
+                    
+                        <span class="button next">
+                            <a href="https://totikom.github.io/blog/backups/">
+                                <span class="button__text">Backups made easy: btrfs + snapper + snapborg</span>&nbsp;
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    </div>
+            </div>
+        
+</div>
+
+    </div>
+
+    
+    <footer class="footer">
+        <div class="footer__inner">
+                <div class="copyright">
+                        <span>© 
+    2025
+ Eugene Lomov</span>
+                    <span class="copyright-theme">
+                        <span class="copyright-theme-sep">:: </span>
+                        Theme: <a href="https://github.com/pawroman/zola-theme-terminimal/">Terminimal</a> by pawroman
+                    </span>
+                </div>
+            </div>
+    </footer>
+    
+
+</div>
+    <!-- Tracking via https://www.goatcounter.com/ -->
+    <script data-goatcounter="https://totikom.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+
+</html>
