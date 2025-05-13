@@ -78,4 +78,6 @@ After setting up `syncthing` on both the PC and the phone, I got (almost) perfec
 This simple workflow had allowed me to greatly simplify my music collection management and usage.
 Looking back, this workflow looks like pretty obvious, but I hope that it still can help people, who maintains their music library by their own.
 
+{{ comments(id="114116930289887822") }}
+
 ---

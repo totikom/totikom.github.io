@@ -51,3 +51,7 @@ menu_items = [
     # set newtab to true to make the link open in new tab
     #{name = "github", url = "url-to-your-github", newtab = true},
 ]
+[extra.mastodon]
+host = "fosstodon.org"
+username = "totikom"
+
